@@ -1,0 +1,76 @@
+.navbar {
+  padding: 0.5rem 0rem 24px 0rem !important;
+  height: 86px;
+  // background-color: var(--color-scheme-base);
+  // background: -webkit-linear-gradient(
+  //   135deg,
+  //   var(--color-scheme-base),
+  //   var(--color-scheme-accent) 75%
+  // );
+  // background-image: linear-gradient(
+  //   135deg,
+  //   var(--color-scheme-base),
+  //   var(--color-scheme-accent) 75%
+  // );
+  .navbar-brand {
+    color: var(--navbar-color-font);
+    font-weight: 200;
+    font-size: 1.3em;
+    word-spacing: 0.2rem;
+  }
+
+  .nav.navbar-nav .nav-item {
+    .nav-link {
+      color: white;
+      opacity: 0.8;
+      padding-right: 0.3rem;
+      padding-left: 0.3rem;
+      margin-right: 0.5rem;
+      margin-left: 0.5rem;
+      padding-bottom: 0.2rem;
+      &:hover {
+        opacity: 1;
+      }
+    }
+    &.active .nav-link {
+      border-bottom: white 1px solid;
+      opacity: 1;
+    }
+  }
+
+  .navbar-container {
+    max-width: 1250px;
+  }
+
+  span {
+    margin-top: unset;
+    color: #f9fafa;
+    font-weight: 400;
+    font-size: 1em;
+    word-spacing: 0.2rem;
+    margin-block-end: 0;
+  }
+}
+
+.navbar:before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 280px;
+  transform: skewY(2deg);
+  transform-origin: top right;
+  top: 0;
+  z-index: -1;
+  background-color: var(--color-scheme-base);
+  background: -webkit-linear-gradient(
+    135deg,
+    var(--color-scheme-base),
+    var(--color-scheme-accent) 85%
+  );
+  background-image: linear-gradient(
+    135deg,
+    var(--color-scheme-base),
+    var(--color-scheme-accent) 85%
+  );
+  filter: drop-shadow(0px 3px 5px rgb(0, 0, 0, 0.2));
+}

@@ -1,0 +1,24 @@
+.btn.btn-primary {
+  background-color: var(--color-ui-buttons-main);
+  border-color: var(--color-ui-buttons-main);
+  color: var(--color-ui-text-fills);
+  fill: var(--color-ui-text-fills);
+
+  &:hover {
+    background-color: var(--color-ui-buttons-hover);
+    border-color: var(--color-ui-buttons-hover);
+  }
+
+  &:active,
+  &:focus {
+    background-color: var(--color-ui-buttons-active) !important;
+    border-color: var(--color-ui-buttons-active) !important;
+  }
+
+  &:disabled {
+    background-color: var(--color-ui-buttons-disabled);
+    border-color: var(--color-ui-buttons-disabled);
+    color: var(--color-ui-text-fills);
+    fill: var(--color-ui-text-fills);
+  }
+}

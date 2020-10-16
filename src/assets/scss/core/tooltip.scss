@@ -1,0 +1,40 @@
+.tooltip-obj {
+  position: absolute;
+  pointer-events: none;
+  transition: opacity 200ms;
+  z-index: 1080;
+  padding: 0.4rem 0;
+
+  .tooltip-container .arrow {
+    position: absolute;
+    width: 0.8rem;
+    height: 0.4rem;
+    z-index: 1080;
+    left: calc(50% - 0.8rem);
+  }
+
+  .tooltip-container .arrow::before {
+    position: absolute;
+    left: 50%;
+    content: "";
+    border-color: transparent;
+    border-style: solid;
+    top: 0;
+    border-width: 0.4rem 0.4rem 0;
+    border-top-color: #f9fafa;
+  }
+
+  .tooltip-container {
+    //position the tooltip above cursor
+    transform: translate3d(-50%, -100%, 0px) translateY(-0.9rem);
+  }
+
+  .tooltip-container .tooltip-inner-text {
+    max-width: 170px;
+    padding: 0.6rem 0.5rem;
+    color: #333;
+    text-align: center;
+    background-color: #f9fafa;
+    border-radius: 0.3rem;
+  }
+}
