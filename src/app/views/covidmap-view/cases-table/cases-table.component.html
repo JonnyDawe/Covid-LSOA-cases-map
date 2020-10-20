@@ -1,0 +1,64 @@
+<mat-form-field [color]="'#57aaa8'">
+  <mat-label>Filter Table</mat-label>
+  <input
+    matInput
+    (keyup)="applyFilter($event)"
+    placeholder="Ex. Ashton North"
+    #input
+  />
+</mat-form-field>
+
+<div
+  class="position-relative card-item mat-elevation-z3"
+  style="height: calc(100% - 65.5px)"
+>
+  <app-loader class="h-100" [id]="'table'"></app-loader>
+  <div
+    class="table-container"
+    style="overflow-y: auto; height: calc(100% - 56px)"
+  >
+    <table
+      mat-table
+      [dataSource]="_dataSource"
+      matSort
+      matSortDirection="desc"
+      matSortActive="cases"
+    >
+      <!-- Name Column -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let element">{{ element.MSOAName }}</td>
+      </ng-container>
+
+      <!-- Local Authority Column -->
+      <ng-container matColumnDef="localAuthority">
+        <th mat-header-cell *matHeaderCellDef>Local Authority</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.MSOALocalAuthority }}
+        </td>
+      </ng-container>
+
+      <!-- Cases Column -->
+      <ng-container matColumnDef="cases">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          Reported Cases
+        </th>
+        <td mat-cell *matCellDef="let element">{{ element.cases }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr
+        mat-row
+        class="elementRow"
+        *matRowDef="let row; columns: displayedColumns"
+        (click)="tableClickHandler(row)"
+      ></tr>
+    </table>
+  </div>
+  <mat-paginator [hidePageSize]="true" showFirstLastButtons></mat-paginator>
+</div>
+
+<!-- <mat-paginator
+[pageSizeOptions]="[20, 40]"
+showFirstLastButtons
+></mat-paginator> -->

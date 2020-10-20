@@ -1,0 +1,27 @@
+/* import the required JSAPI css */
+@import url("https://js.arcgis.com/4.14/esri/themes/light/main.css");
+
+.map-container-element {
+  height: calc(100% - 24px);
+}
+
+.esri-view {
+  height: 100%;
+}
+.esri-view {
+  outline: none !important;
+}
+
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  transition: opacity 200ms;
+}
+
+.tooltip > div {
+  margin: 0 auto;
+  padding: 12px;
+  border-radius: 4px;
+  box-shadow: 0px 0px 4px rgba(255, 255, 255, 0.75);
+  transform: translate3d(-50%, -125%, 0);
+}

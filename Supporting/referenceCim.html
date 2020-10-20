@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>CIMSymbol | Sample | ArcGIS API for JavaScript 4.17</title>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+
+      #sampleInstructions {
+        padding: 10px;
+        background-color: white;
+        width: 300px;
+      }
+
+      #topbar {
+        background: #fff;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 10px;
+        align-items: center;
+        display: flex;
+        flex-flow: row nowrap;
+      }
+
+      .action-button {
+        margin-right: 5px;
+        font-size: 16px;
+        background-color: transparent;
+        border: 1px solid #d3d3d3;
+        color: #6e6e6e;
+        height: 32px;
+        width: 32px;
+        text-align: center;
+        box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
+        font-family: Arial;
+      }
+
+      .action-button:hover,
+      .action-button:focus {
+        background: #0079c1;
+        color: #e4e4e4;
+      }
+
+      .active {
+        background: #0079c1;
+        color: #e4e4e4;
+      }
+    </style>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.17/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.17/"></script>
+
+    <script>
+      require([
+        "esri/views/MapView",
+        "esri/Map",
+        "esri/widgets/Sketch/SketchViewModel",
+        "esri/widgets/Expand",
+        "esri/Graphic",
+        "esri/layers/GraphicsLayer"
+      ], function (
+        MapView,
+        Map,
+        SketchViewModel,
+        Expand,
+        Graphic,
+        GraphicsLayer
+      ) {
+        let numberIndex = 1;
+        let letterIndex = 1;
+        let pointType = "number";
+
+        // Set up initial graphics
+        const initialGraphicsCoordinates = [
+          [31.19, 122.12],
+          [22.33, 113.94],
+          [31.11, 114.56]
+        ];
+        const initialGraphics = initialGraphicsCoordinates.map(function (
+          coordinates
+        ) {
+          return new Graphic({
+            geometry: {
+              type: "point",
+              latitude: coordinates[0],
+              longitude: coordinates[1]
+            },
+            symbol: {
+              type: "cim",
+              data: {
+                type: "CIMSymbolReference",
+                symbol: getPointSymbolData()
+              }
+            }
+          });
+        });
+
+        // GraphicsLayer to hold graphics created via sketch view model
+        const graphicsLayer = new GraphicsLayer({
+          graphics: initialGraphics
+        });
+
+        const map = new Map({
+          basemap: "gray-vector",
+          layers: [graphicsLayer]
+        });
+
+        const view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [106.79, 38.23],
+          zoom: 3
+        });
+
+        view.when(function () {
+          // create a new sketch view model
+          const sketchViewModel = new SketchViewModel({
+            view,
+            layer: graphicsLayer
+          });
+
+          // Listen to create-complete event to add a newly created graphic to view
+          sketchViewModel.on("create", addGraphic);
+
+          // called when sketchViewModel's create-complete event is fired.
+          function addGraphic(event) {
+            if (event.state === "complete") {
+              const cimSymbol = {
+                type: "cim",
+                // gets JSON data defining CIMPointSymbol
+                data: {
+                  type: "CIMSymbolReference",
+                  symbol: getPointSymbolData()
+                }
+              };
+              graphicsLayer.remove(event.graphic);
+              const newGraphic = new Graphic({
+                geometry: event.graphic.geometry,
+                symbol: cimSymbol
+              });
+              graphicsLayer.add(newGraphic);
+
+              sketchViewModel.create("point");
+            }
+          }
+
+          const drawPointButtonLetter = document.getElementById(
+            "pointButtonLetter"
+          );
+          drawPointButtonLetter.onclick = function () {
+            // set the sketch to create a point geometry
+            sketchViewModel.create("point");
+            setActiveButton(this);
+            pointType = "letter";
+          };
+
+          const drawPointButtonNumber = document.getElementById(
+            "pointButtonNumber"
+          );
+          sketchViewModel.create("point");
+          setActiveButton(drawPointButtonNumber);
+          drawPointButtonNumber.onclick = function () {
+            // set the sketch to create a point geometry
+            sketchViewModel.create("point");
+            setActiveButton(this);
+            pointType = "number";
+          };
+
+          // reset button
+          document.getElementById("resetBtn").onclick = function () {
+            graphicsLayer.removeAll();
+            setActiveButton();
+            numberIndex = 1;
+            letterIndex = 1;
+          };
+
+          function setActiveButton(selectedButton) {
+            view.focus();
+            const elements = document.getElementsByClassName("active");
+            for (let i = 0; i < elements.length; i++) {
+              elements[i].classList.remove("active");
+            }
+            if (selectedButton) {
+              selectedButton.classList.add("active");
+            }
+          }
+
+          // Create help expand widget
+          const sampleInstructions = document.createElement("div");
+          sampleInstructions.id = "sampleInstructions";
+          sampleInstructions.innerHTML =
+            "Click on the map to start drawing. Use the top right toolbar to switch tool or reset.";
+
+          const instructionsExpand = new Expand({
+            expandIconClass: "esri-icon-question",
+            expandTooltip: "How to use this sample",
+            view: view,
+            content: sampleInstructions,
+            expanded: true
+          });
+          view.ui.add(instructionsExpand, "top-left");
+        });
+
+        // See https://github.com/Esri/cim-spec/blob/master/docs/v2/CIMSymbols.md#cimpointsymbol
+        //  for more information on CIM properties
+        function getPointSymbolData() {
+          return {
+            type: "CIMPointSymbol",
+            symbolLayers: [
+              {
+                type: "CIMVectorMarker",
+                enable: true,
+                size: 32,
+                colorLocked: true,
+                anchorPointUnits: "Relative",
+                frame: { xmin: -5, ymin: -5, xmax: 5, ymax: 5 },
+                markerGraphics: [
+                  {
+                    type: "CIMMarkerGraphic",
+                    geometry: { x: 0, y: 0 },
+                    symbol: {
+                      type: "CIMTextSymbol",
+                      fontFamilyName: "Arial",
+                      fontStyleName: "Bold",
+                      height: 4,
+                      horizontalAlignment: "Center",
+                      offsetX: 0,
+                      offsetY: 0,
+                      symbol: {
+                        type: "CIMPolygonSymbol",
+                        symbolLayers: [
+                          {
+                            type: "CIMSolidFill",
+                            enable: true,
+                            color: [255, 255, 255, 255]
+                          }
+                        ]
+                      },
+                      verticalAlignment: "Center"
+                    },
+                    textString:
+                      pointType === "number"
+                        ? String(numberIndex + 124)
+                        : String.fromCharCode(64 + letterIndex++)
+                  }
+                ],
+                scaleSymbolsProportionally: true,
+                respectFrame: true
+              },
+              {
+                type: "CIMVectorMarker",
+                enable: true,
+                anchorPoint: { x: 0, y: -0.5 },
+                anchorPointUnits: "Relative",
+                size: 0,
+                frame: { xmin: 0.0, ymin: 0.0, xmax: 17.0, ymax: 17.0 },
+                markerGraphics: [
+                  {
+                    type: "CIMMarkerGraphic",
+                    geometry: {
+                      rings: [
+                      [
+                      [19.85,-3],[14.85,3],[24.85,3],[19.85,-3]
+                    ]
+                      ]
+                    },
+                    symbol: {
+                      type: "CIMPolygonSymbol",
+                      symbolLayers: [
+                        {
+                          type: "CIMSolidFill",
+                          enable: true,
+                          color: [39, 129, 153, 255]
+                        }
+                      ]
+                    }
+                  }
+                ],
+                scaleSymbolsProportionally: true,
+                respectFrame: true
+              },
+              {
+                type: "CIMVectorMarker",
+                enable: true,
+                anchorPoint: { x: 0, y: 0 },
+                anchorPointUnits: "Relative",
+                size: 12,
+                frame: {
+                  xmin: 0.0,
+                  ymin: 0.0,
+                  xmax: 39.7,
+                  ymax: 17.0
+                },
+                markerGraphics: [
+                  {
+                    type: "CIMMarkerGraphic",
+                    geometry: {
+                      rings: [
+                        [
+                          [32.2, 0.0],
+                          [7.4, 0.0],
+                          [6.0, 0.2],
+                          [4.6, 0.6],
+                          [3.3, 1.4],
+                          [2.2, 2.5],
+                          [1.2, 3.8],
+                          [0.6, 5.2],
+                          [0.1, 6.8],
+                          [0.0, 8.5],
+                          [0.1, 10.2],
+                          [0.6, 11.8],
+                          [1.2, 13.2],
+                          [2.2, 14.5],
+                          [3.3, 15.6],
+                          [4.6, 16.4],
+                          [6.0, 16.8],
+                          [7.4, 17.0],
+                          [32.2, 17.0],
+                          [33.7, 16.8],
+                          [35.1, 16.4],
+                          [36.4, 15.6],
+                          [37.5, 14.5],
+                          [38.4, 13.2],
+                          [39.1, 11.7],
+                          [39.6, 10.2],
+                          [39.7, 8.5],
+                          [39.6, 6.8],
+                          [39.1, 5.3],
+                          [38.4, 3.8],
+                          [37.5, 2.5],
+                          [36.4, 1.4],
+                          [35.1, 0.6],
+                          [33.7, 0.2],
+                          [32.2, 0.0]
+                        ]
+                      ]
+                    },
+                    symbol: {
+                      type: "CIMPolygonSymbol",
+                      symbolLayers: [
+                        {
+                          type: "CIMSolidFill",
+                          enable: true,
+                          color: [170, 70, 50, 255]
+                        }
+                      ]
+                    }
+                  }
+                ],
+                scaleSymbolsProportionally: true,
+                respectFrame: true
+              }
+            ]
+          };
+        }
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv">
+      <div id="topbar">
+        <button
+          class="action-button"
+          id="pointButtonNumber"
+          type="button"
+          title="Draw point with number"
+        >
+          1
+        </button>
+        <button
+          class="action-button"
+          id="pointButtonLetter"
+          type="button"
+          title="Draw point with letter"
+        >
+          A
+        </button>
+        <button
+          class="action-button esri-icon-trash"
+          id="resetBtn"
+          type="button"
+          title="Clear graphics"
+        ></button>
+      </div>
+    </div>
+  </body>
+</html>
+[
+[
+32.2,
+25
+],
+[
+7.4,
+25
+],
+[
+6,
+25.2
+],
+[
+4.6,
+25.6
+],
+[
+3.3,
+26.4
+],
+[
+2.2,
+27.5
+],
+[
+1.2,
+28.8
+],
+[
+0.6,
+30.2
+],
+[
+0.1,
+31.8
+],
+[
+0,
+33.5
+],
+[
+0.1,
+35.2
+],
+[
+0.6,
+36.8
+],
+[
+1.2,
+38.2
+],
+[
+2.2,
+39.5
+],
+[
+3.3,
+40.6
+],
+[
+4.6,
+41.4
+],
+[
+6,
+41.8
+],
+[
+7.4,
+42
+],
+[
+32.2,
+42
+],
+[
+33.7,
+41.8
+],
+[
+35.1,
+41.4
+],
+[
+36.4,
+40.6
+],
+[
+37.5,
+39.5
+],
+[
+38.4,
+38.2
+],
+[
+39.1,
+36.7
+],
+[
+39.6,
+35.2
+],
+[
+39.7,
+33.5
+],
+[
+39.6,
+31.8
+],
+[
+39.1,
+30.3
+],
+[
+38.4,
+28.8
+],
+[
+37.5,
+27.5
+],
+[
+36.4,
+26.4
+],
+[
+35.1,
+25.6
+],
+[
+33.7,
+25.2
+],
+[
+32.2,
+25
+]
+]
