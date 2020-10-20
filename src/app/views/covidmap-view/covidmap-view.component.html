@@ -1,1 +1,65 @@
-<p>covidmap-view works!</p>
+<div class="row pb-4 position-relative h-100">
+  <div
+    [ngClass]="{ 'col-7': !mapOnly, 'col-12': mapOnly }"
+    class="h-100 animate-width"
+  >
+    <div class="map-toggle-menu">
+      <mat-slide-toggle
+        class="pl-2 mat-elevation-z3 map-toggle"
+        [disabled]="mapLoadingState"
+        [(ngModel)]="mapService.showRestrictionAreas"
+        >Show Areas With Local Restrictions</mat-slide-toggle
+      >
+    </div>
+
+    <div class="map-card-height card-item position-relative mat-elevation-z3">
+      <app-loader class="h-100" [id]="'map'"></app-loader>
+      <button
+        [ngClass]="{
+          'maptogglewidth-open-btn': !mapOnly,
+          'maptogglewidth-close-btn': mapOnly
+        }"
+        class="btn btn-primary maptogglewidth-btn maptogglefullwidth mat-elevation-z2"
+        [disabled]="mapLoadingState"
+        (click)="toggleMapWidth()"
+      >
+        <svg
+          *ngIf="!mapOnly"
+          class="my-auto"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+        >
+          <path fill="none" d="M0 0h24v24H0z" />
+          <path
+            d="M20 3h2v6h-2V5h-4V3h4zM4 3h4v2H4v4H2V3h2zm16 16v-4h2v6h-6v-2h4zM4 19h4v2H2v-6h2v4z"
+          />
+        </svg>
+
+        <svg
+          class="my-auto"
+          *ngIf="mapOnly"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+        >
+          <path fill="none" d="M0 0h24v24H0z" />
+          <path
+            d="M18 7h4v2h-6V3h2v4zM8 9H2V7h4V3h2v6zm10 8v4h-2v-6h6v2h-4zM8 15v6H6v-4H2v-2h6z"
+          />
+        </svg>
+      </button>
+      <app-mapview
+        appMapTooltip
+        class="d-block h-100 map-focus"
+      ></app-mapview>
+    </div>
+  </div>
+  <div *ngIf="!mapOnly" class="col-5 h-100">
+    <div class="h-100 animate-width">
+      <app-cases-table></app-cases-table>
+    </div>
+  </div>
+</div>

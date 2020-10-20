@@ -1,13 +1,20 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
 import config from "esri/config";
 
+//Todo...
+//new navbar...
+//wider content
+//content cards with rouned borders.
+//popups for content.
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.scss"],
 })
 export class AppComponent {
   constructor() {
+
+    //note the default worker url version needs to match the version loaded in by webpack... make sure to check version installed..
     /**Hack required to get secured services to work with webworkers. */
     const DEFAULT_WORKER_URL = "https://js.arcgis.com/4.16/";
     const DEFAULT_LOADER_URL = `${DEFAULT_WORKER_URL}dojo/dojo-lite.js`;
@@ -56,6 +63,5 @@ export class AppComponent {
     };
   }
 
-
-  title = 'Covid-mapping';
+  title = "eurovision-map-component";
 }

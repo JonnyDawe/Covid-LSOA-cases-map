@@ -1,0 +1,116 @@
+.map-card-height {
+  height: calc(100% - 65.5px);
+}
+
+.table-card-height {
+  height: calc(100% - 65.5px);
+}
+
+.mat-form-field-label {
+  color: white;
+  opacity: 0.8;
+}
+
+.map-toggle {
+  padding-right: 10px;
+  border-radius: 5px;
+  height: 30px;
+}
+
+.map-toggle-menu {
+  padding-top: calc(65.5px - 1.25em - 28.5px);
+  height: 65.5px;
+  color: white;
+  font-weight: 200;
+  font-family: "Lato", sans-serif !important;
+}
+
+.maptogglefullwidth {
+  position: absolute;
+  top: 50%;
+  right: 0%;
+  z-index: 1000;
+  transform: translate(20%, -50%);
+}
+
+.maptogglewidth-btn {
+  height: 40px;
+  width: 40px;
+  padding: 0px;
+  display: flex;
+  justify-content: center;
+}
+
+button.maptogglewidth-open-btn {
+  &:before {
+    // &:after {
+    content: " ";
+    width: 0;
+    height: 0;
+    border-bottom: 10px solid transparent; /* left arrow slant */
+    border-top: 10px solid transparent; /* right arrow slant */
+    border-left: 8px solid #2f2f2f; /* bottom, add background color here */
+    font-size: 0;
+    line-height: 0;
+    opacity: 0;
+    -webkit-transition: opacity 0.25s ease-in-out;
+    -moz-transition: opacity 0.25s ease-in-out;
+    -ms-transition: opacity 0.25s ease-in-out;
+    -o-transition: opacity 0.25s ease-in-out;
+    transition: opacity 0.25s ease-in-out;
+  }
+  &:before {
+    /* positioning */
+    position: absolute;
+    top: 20px;
+    left: 43px;
+    transform: translate(0, -50%);
+    z-index: 1002;
+  }
+  // &:after {
+  //   border-bottom-color: #333; /* arrow color */
+
+  //   /* positioning */
+  //   position: absolute;
+  //   top: 20px;
+  //   left: 45px;
+  //   z-index: 1001;
+  // }
+}
+
+button.maptogglewidth-close-btn {
+  &:before {
+    // &:after {
+    content: " ";
+    width: 0;
+    height: 0;
+    border-bottom: 10px solid transparent; /* left arrow slant */
+    border-top: 10px solid transparent; /* right arrow slant */
+    border-right: 8px solid #2f2f2f; /* bottom, add background color here */
+    font-size: 0;
+    line-height: 0;
+    opacity: 0;
+    -webkit-transition: opacity 0.25s ease-in-out;
+    -moz-transition: opacity 0.25s ease-in-out;
+    -ms-transition: opacity 0.25s ease-in-out;
+    -o-transition: opacity 0.25s ease-in-out;
+    transition: opacity 0.25s ease-in-out;
+  }
+  &:before {
+    /* positioning */
+    position: absolute;
+    top: 20px;
+    left: -6px;
+    transform: translate(-100%, -50%);
+    z-index: 1002;
+  }
+}
+
+button.maptogglewidth-open-btn,
+button.maptogglewidth-close-btn {
+  &:hover {
+    &:before {
+      opacity: 1;
+    }
+  }
+}

@@ -3,13 +3,13 @@ import { Subject } from "rxjs";
 import MSOA_lookup from "./MSOA_Lookup.json";
 import { CovidTableDataElement } from "../models/custom-types";
 import esri = __esri;
+import Extent from "esri/geometry/Extent";
 
 /**Service for storing Application State**/
 @Injectable({
   providedIn: "root",
 })
-export class EsrimapserviceService {
-
+export class AppStateService {
   /** --------------------Map State-------------------- **/
 
   //Map centre and Zoom Level
@@ -20,7 +20,16 @@ export class EsrimapserviceService {
 
   //current map Extent
   mapCurrentExtent$ = new Subject<esri.Extent>();
-  _mapCurrentExtent: esri.Extent;
+  _mapCurrentExtent: esri.Extent = new Extent({
+    spatialReference: {
+      // "latestWkid": 3857,
+      wkid: 102100,
+    },
+    xmin: -882179.7869264379,
+    ymin: 6086514.827834351,
+    xmax: 592749.110863931,
+    ymax: 7872083.808575593,
+  });
 
   set mapCurrentExtent(extent: esri.Extent) {
     this._mapCurrentExtent = extent;
@@ -61,7 +70,6 @@ export class EsrimapserviceService {
     return this._showRestrictionAreas;
   }
 
-
   /** --------------------Table State-------------------- **/
 
   //store the data displayed on the table
@@ -87,7 +95,6 @@ export class EsrimapserviceService {
     return this._tableLoaded;
   }
 
-
   /** --------------------External Data Services-------------------- **/
   dataServiceUrl: string =
     "https://services1.arcgis.com/0IrmI40n5ZYxTUrV/arcgis/rest/services/MSOA_2011_En_20201015_WGS84_std/FeatureServer";
@@ -103,7 +110,6 @@ export class EsrimapserviceService {
 
   showRestrictionAreas$ = new Subject<boolean>();
   _showRestrictionAreas: boolean = false;
-
 
   //MSOA Lookup
   MSOA_Lookup = (function initaliseMSOAMap() {

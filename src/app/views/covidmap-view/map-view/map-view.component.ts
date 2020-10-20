@@ -295,7 +295,7 @@ export class MapViewComponent implements OnInit, OnDestroy {
     }
     return {
       graphic: response.results[0].graphic,
-      screenPoint: response.screenPoint,
+      screenPoint: (response as any).screenPoint,
     };
   }
 
