@@ -16,7 +16,7 @@ export class AppComponent {
 
     //note the default worker url version needs to match the version loaded in by webpack... make sure to check version installed..
     /**Hack required to get secured services to work with webworkers. */
-    const DEFAULT_WORKER_URL = "https://js.arcgis.com/4.16/";
+    const DEFAULT_WORKER_URL = "https://js.arcgis.com/4.17/";
     const DEFAULT_LOADER_URL = `${DEFAULT_WORKER_URL}dojo/dojo-lite.js`;
 
     config.workers.loaderUrl = DEFAULT_LOADER_URL;
