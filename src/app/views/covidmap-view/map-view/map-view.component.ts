@@ -23,8 +23,8 @@ import { createContinuousRenderer } from "esri/smartMapping/renderers/color";
 import * as colorSchemes from "esri/smartMapping/symbology/color";
 import Color from "esri/Color";
 import { Subscription } from "rxjs";
-import { AppStateService } from '../../../shared/app-state.service';
-
+import { AppStateService } from "../../../shared/app-state.service";
+import { Extent } from "esri/geometry";
 
 /**
  * To do:
@@ -75,29 +75,29 @@ export class MapViewComponent implements OnInit, OnDestroy {
 
   //Initialise Esri Map
   async initializeMap() {
-    //configure the feature layer:
-
-
-
-    const casesLabelClass = new LabelClass({
-      labelExpressionInfo: { expression: `$feature.${this.mapService.dataServiceFields.CovidCases}` },
-      symbol: {
-        type: "text",  // autocasts as new TextSymbol()
-        color: "black",
-        haloSize: 1,
-        haloColor: "white"
-      } as esri.SymbolProperties
-    });
-
-    const mapcaseslayerproperties = {
+    //configure the mapcases feature layer properties:
+    let mapcaseslayerproperties: any = {
       url: this.mapService.dataServiceUrl,
       outFields: ["*"],
       opacity: 0.7,
       title: "Covid_Layer",
-      // labelingInfo: casesLabelClass
     };
 
-    const maprestrictionsFill = new SimpleFillSymbol();
+    // configure label properties
+    const casesLabelClass = new LabelClass({
+      labelExpressionInfo: {
+        expression: `$feature.${this.mapService.dataServiceFields.CovidCases}`,
+      },
+      minScale: 1000000,
+      symbol: {
+        type: "text", // autocasts as new TextSymbol()
+        color: "black",
+        haloSize: 1,
+        haloColor: "white",
+      } as esri.SymbolProperties,
+    });
+
+    mapcaseslayerproperties.labelingInfo = casesLabelClass;
 
     const maprestrictionslayerproperties: any = {
       url: this.mapService.dataRestrictionsServiceUrl,
@@ -142,6 +142,18 @@ export class MapViewComponent implements OnInit, OnDestroy {
 
     this._view = new MapView(mapViewProperties);
 
+    let filterSearchExtent = new Extent({
+      spatialReference: {
+        // "latestWkid": 3857,
+        wkid: 4326,
+      },
+      xmin: -7.9247558,
+      ymin: 47.8775933,
+      xmax: 5.3247559,
+      ymax: 57.543777,
+    });
+
+    //initialise the sources for the search widget.
     const sources = [
       {
         locator: new Locator({
@@ -155,6 +167,9 @@ export class MapViewComponent implements OnInit, OnDestroy {
         defaultZoomScale: 50000,
         zoomScale: 50000,
         popupEnabled: false,
+        filter: {
+          geometry: filterSearchExtent,
+        },
       },
     ];
 
@@ -190,19 +205,13 @@ export class MapViewComponent implements OnInit, OnDestroy {
 
     this._caseslayerview = await this._view.whenLayerView(this._casesfeatlayer);
 
-
-
-
-
-
-
     // let graphicsToDisplay = this.mapService._tableData.map((element) => {
 
     //   let cimmarkerSymbol = {
     //     type: "cim", // autocasts as new SimpleMarkerSymbol()
     //     data: {
     //       type: "CIMSymbolReference",
-    //       symbol: this.getPointSymbolData(element.cases)
+    //       symbol: this.getCIMPointSymbolData(element.cases)
     //     }
 
     //   };
@@ -218,11 +227,11 @@ export class MapViewComponent implements OnInit, OnDestroy {
     //initialise property watchers:
     this.currentMapExtentHandle = this._view.watch(
       "extent",
-      this.debounce(
-        (newValue: esri.Extent) => { if (newValue) { this.mapService.mapCurrentExtent = newValue } }
-        ,
-        100
-      )
+      this.debounce((newValue: esri.Extent) => {
+        if (newValue) {
+          this.mapService.mapCurrentExtent = newValue;
+        }
+      }, 100)
     );
 
     // initialise user events.
@@ -404,8 +413,7 @@ export class MapViewComponent implements OnInit, OnDestroy {
     );
   }
 
-
-  getPointSymbolData(value) {
+  getCIMPointSymbolData(value) {
     return {
       type: "CIMPointSymbol",
       symbolLayers: [
@@ -440,7 +448,7 @@ export class MapViewComponent implements OnInit, OnDestroy {
                 },
                 verticalAlignment: "Center",
               },
-              textString: String(value)
+              textString: String(value),
             },
           ],
           scaleSymbolsProportionally: true,
@@ -555,5 +563,4 @@ export class MapViewComponent implements OnInit, OnDestroy {
       ],
     };
   }
-
 }
