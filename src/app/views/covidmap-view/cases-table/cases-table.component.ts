@@ -110,17 +110,7 @@ export class CasesTableComponent
     }
 
 
-    let lookuper = this._allData.map((element) => {
-      let temp = this.mapService.MSOA_Lookup.get(element.MSOACode)
-      temp.centroidgeometry = (element.MSOAGeometry as esri.Polygon).centroid
-      return temp
-
-    })
-    console.log("teser", lookuper)
-
-
-
-
+    let extentFilter = this.mapService.mapCurrentExtent ? this.mapService.mapCurrentExtent : this.mapService._mapStartingExtent
 
     this._dataSource = new MatTableDataSource<{
       MSOAName: string;
@@ -130,7 +120,7 @@ export class CasesTableComponent
       this._allData.filter((element) => {
         return geometryEngine.intersects(
           element.MSOAGeometry,
-          this.mapService.mapCurrentExtent
+          extentFilter
         );
       })
     );

@@ -20,7 +20,7 @@ export class AppStateService {
 
   //current map Extent
   mapCurrentExtent$ = new Subject<esri.Extent>();
-  _mapCurrentExtent: esri.Extent = new Extent({
+  _mapStartingExtent: esri.Extent = new Extent({
     spatialReference: {
       // "latestWkid": 3857,
       wkid: 102100,
@@ -30,6 +30,9 @@ export class AppStateService {
     xmax: 592749.110863931,
     ymax: 7872083.808575593,
   });
+
+
+  _mapCurrentExtent: esri.Extent
 
   set mapCurrentExtent(extent: esri.Extent) {
     this._mapCurrentExtent = extent;
@@ -128,5 +131,5 @@ export class AppStateService {
     return lookup;
   })();
 
-  constructor() {}
+  constructor() { }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { AppStateService } from "../../shared/app-state.service";
 import { LoaderService } from "../../shared/loader/loader.service";
 import { Subscription } from "rxjs";
@@ -9,7 +9,7 @@ import { Subscription } from "rxjs";
   templateUrl: "./covidmap-view.component.html",
   styleUrls: ["./covidmap-view.component.scss"],
 })
-export class CovidmapViewComponent implements OnInit {
+export class CovidmapViewComponent implements OnInit, OnDestroy {
   mapLoadedSubscription: Subscription;
   mapLoadingState: boolean = true;
 
@@ -18,7 +18,7 @@ export class CovidmapViewComponent implements OnInit {
   constructor(
     public mapService: AppStateService,
     private loaderService: LoaderService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loaderService.register({ id: "map", show: false });
@@ -30,6 +30,10 @@ export class CovidmapViewComponent implements OnInit {
         this.mapLoadingState = !mapLoaded;
       }
     );
+  }
+
+  ngOnDestroy(): void {
+    this.mapLoadedSubscription.unsubscribe()
   }
 
   displayLoader(id: string, loadedStatus: boolean) {
