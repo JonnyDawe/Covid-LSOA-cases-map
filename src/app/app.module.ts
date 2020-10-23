@@ -15,6 +15,8 @@ import { HeaderComponent } from './app-skeleton/header/header.component';
 import { MapViewComponent } from './views/covidmap-view/map-view/map-view.component';
 import { CasesTableComponent } from './views/covidmap-view/cases-table/cases-table.component';
 import { DialogAboutComponent } from './app-skeleton/dialog-about/dialog-about.component';
+import { MobileCovidmapViewComponent } from './views/mobile-covidmap-view/mobile-covidmap-view.component';
+import { MobileHeaderComponent } from './app-skeleton/mobile-header/mobile-header.component';
 
 //Material Design Modules
 import { MatPaginatorModule } from "@angular/material/paginator";
@@ -25,6 +27,11 @@ import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { MatSliderModule } from "@angular/material/slider";
 import { MatInputModule } from "@angular/material/input";
 import { MapTooltipDirective } from './shared/map-tooltip.directive';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { SidenavService } from './shared/sidenav.service';
 
 
 
@@ -40,6 +47,8 @@ import { MapTooltipDirective } from './shared/map-tooltip.directive';
     MapViewComponent,
     CasesTableComponent,
     MapTooltipDirective,
+    MobileCovidmapViewComponent,
+    MobileHeaderComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -54,8 +63,12 @@ import { MapTooltipDirective } from './shared/map-tooltip.directive';
     MatSortModule,
     MatSlideToggleModule,
     MatDialogModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatSidenavModule
   ],
-  providers: [],
+  providers: [SidenavService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

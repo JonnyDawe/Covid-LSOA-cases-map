@@ -13,9 +13,16 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "importHelpers": true,
-    "target": "es5",
-    "typeRoots": ["node_modules/@types"],
-    "lib": ["dom", "es2015.promise", "es5", "es6"]
+    "target": "es2015",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "lib": [
+      "dom",
+      "es2015.promise",
+      "es5",
+      "es6"
+    ]
   }
   // [NOTE: these options simply haven't been tested yet with the angular-cli-esri-map components]
   // "angularCompilerOptions": {

@@ -1,11 +1,13 @@
 import { NgModule } from "@angular/core";
-import { Routes, RouterModule } from "@angular/router";
+import { Routes, RouterModule, Router } from "@angular/router";
 import { CovidmapViewComponent } from './views/covidmap-view/covidmap-view.component';
 import { StatsViewComponent } from './views/stats-view/stats-view.component';
+import { MobileCovidmapViewComponent } from './views/mobile-covidmap-view/mobile-covidmap-view.component';
+import { AppStateService } from './shared/app-state.service';
 
 
 
-export const appRoutes: Routes = [
+export const desktopRoutes: Routes = [
   { path: "", redirectTo: "/map", pathMatch: "full" },
   {
     path: "map",
@@ -14,8 +16,26 @@ export const appRoutes: Routes = [
   { path: "stats", component: StatsViewComponent },
 ];
 
+export const mobileRoutes: Routes = [
+  { path: "", redirectTo: "/map", pathMatch: "full" },
+  {
+    path: "map",
+    component: MobileCovidmapViewComponent,
+  },
+  { path: "stats", component: StatsViewComponent },
+];
+
 @NgModule({
-  imports: [RouterModule.forRoot(appRoutes)],
+  imports: [RouterModule.forRoot(desktopRoutes)],
   exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule {
+
+  public constructor(private router: Router,
+    private applicationStateService: AppStateService) {
+
+    if (applicationStateService.deviceInfo.isMobile) {
+      router.resetConfig(mobileRoutes);
+    }
+  }
+}

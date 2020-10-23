@@ -1,4 +1,11 @@
-<app-header></app-header>
-<div class="container content-portal">
+<app-header *ngIf="!ismobile"></app-header>
+<app-mobile-header *ngIf="ismobile"></app-mobile-header>
+<div
+  class="content-portal"
+  [ngClass]="{
+    'content-portal container': !ismobile,
+    'mobile-content-portal': ismobile
+  }"
+>
   <router-outlet></router-outlet>
 </div>

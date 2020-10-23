@@ -11,11 +11,12 @@
 @import "./core/buttons.scss";
 
 // Libraries
-@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+// @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 @import "~bootstrap/scss/bootstrap";
 
 body {
-  height: 100vh;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
   overflow: hidden;
   font-family: "Lato", sans-serif;
   background-color: #f9fafa;

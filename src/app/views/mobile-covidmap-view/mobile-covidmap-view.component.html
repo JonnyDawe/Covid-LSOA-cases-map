@@ -1,0 +1,12 @@
+<mat-sidenav-container class="example-container mobile-map-card-height">
+  <mat-sidenav #sidenav [mode]="'over'">
+    <p><button mat-button (click)="sidenav.toggle()">Toggle</button></p>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <div class="h-100">
+      <app-loader class="h-100" [id]="'map'"></app-loader>
+      <app-mapview appMapTooltip class="d-block h-100 map-focus"></app-mapview>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

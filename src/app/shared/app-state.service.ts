@@ -1,7 +1,8 @@
 import { Injectable } from "@angular/core";
 import { Subject } from "rxjs";
 import MSOA_lookup from "./MSOA_Lookup.json";
-import { CovidTableDataElement } from "../models/custom-types";
+import { CovidTableDataElement, DeviceInfo } from "../models/custom-types";
+import { DeviceDetectorService } from "ngx-device-detector";
 import esri = __esri;
 import Extent from "esri/geometry/Extent";
 
@@ -10,6 +11,12 @@ import Extent from "esri/geometry/Extent";
   providedIn: "root",
 })
 export class AppStateService {
+  constructor(private deviceService: DeviceDetectorService) {
+    this.MSOA_Lookup = this.initaliseMSOAMap();
+    this.detectDevice();
+    console.log(this.deviceInfo)
+  }
+
   /** --------------------Map State-------------------- **/
 
   //Map centre and Zoom Level
@@ -31,8 +38,7 @@ export class AppStateService {
     ymax: 7872083.808575593,
   });
 
-
-  _mapCurrentExtent: esri.Extent
+  _mapCurrentExtent: esri.Extent;
 
   set mapCurrentExtent(extent: esri.Extent) {
     this._mapCurrentExtent = extent;
@@ -115,7 +121,9 @@ export class AppStateService {
   _showRestrictionAreas: boolean = false;
 
   //MSOA Lookup
-  MSOA_Lookup = (function initaliseMSOAMap() {
+  MSOA_Lookup;
+
+  initaliseMSOAMap() {
     let lookup = new Map<string, any>();
     MSOA_lookup.map((element) => {
       lookup.set(element.MSOA_Code, {
@@ -129,7 +137,17 @@ export class AppStateService {
     });
 
     return lookup;
-  })();
+  }
 
-  constructor() { }
+  //Detect Device so that the correct view can be used.
+  deviceInfo: DeviceInfo;
+
+  detectDevice() {
+    this.deviceInfo = {
+      isDesktop: this.deviceService.isDesktop(),
+      isMobile: this.deviceService.isMobile(),
+      isTablet: this.deviceService.isTablet(),
+      DeviceInfo: this.deviceService.getDeviceInfo(),
+    };
+  }
 }

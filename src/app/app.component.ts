@@ -1,18 +1,24 @@
 import { Component } from "@angular/core";
 import config from "esri/config";
+import { AppStateService } from './shared/app-state.service';
 
 //Todo...
 //new navbar...
 //wider content
 //content cards with rouned borders.
 //popups for content.
+//csv to json => to simple object to key off from.
+//unique value renderer => hashed lines.
 @Component({
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
 })
 export class AppComponent {
-  constructor() {
+  constructor(private appStateService: AppStateService) {
+
+    this.ismobile = appStateService.deviceInfo.isMobile
+
 
     //note the default worker url version needs to match the version loaded in by webpack... make sure to check version installed..
     /**Hack required to get secured services to work with webworkers. */
@@ -62,6 +68,6 @@ export class AppComponent {
       ],
     };
   }
-
+  ismobile: boolean
   title = "eurovision-map-component";
 }
