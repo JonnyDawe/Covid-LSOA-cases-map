@@ -18,11 +18,19 @@
 }
 
 .map-toggle-menu {
-  padding-top: calc(65.5px - 1.25em - 28.5px);
-  height: 65.5px;
-  color: white;
+  // padding-top: calc(65.5px - 1.25em - 28.5px);
+  height: 45px;
+  padding-bottom: 15px;
   font-weight: 200;
   font-family: "Lato", sans-serif !important;
+
+  .mat-slide-toggle {
+    background-color: white;
+  }
+
+  .mat-slide-toggle-content {
+    color: black;
+  }
 }
 
 .maptogglefullwidth {

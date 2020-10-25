@@ -2,10 +2,22 @@
   height: calc(100%);
 }
 
-.example-container {
+.sidenav-menu-position {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
+}
+
+.sidenav-menu-container {
+  width: 75%;
+  padding-top: 15px;
+}
+
+.menu-item {
+  height: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }

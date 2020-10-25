@@ -21,21 +21,28 @@ body {
   font-family: "Lato", sans-serif;
   background-color: #f9fafa;
 
-  background-image: radial-gradient(#000000 1.5px, transparent 1.5px),
-    radial-gradient(currentColor 1.5px, transparent 1.5px);
-  background-size: calc(20 * 2px) calc(20 * 2px);
-  background-position: 0 0, calc(10 * 2px) calc(10 * 2px);
+  background: linear-gradient(135deg, var(--bg) 25%, transparent 25%) -540px 0,
+    linear-gradient(225deg, var(--bg) 35%, transparent 25%) 10px 0,
+    linear-gradient(315deg, var(--bg) 5%, transparent 5%),
+    linear-gradient(45deg, var(--bg) 60%, #00000021 25%);
+  background-size: 150px 150px;
+  background-color: var(--stripe);
+
+  // background-image: radial-gradient(#000000 1.5px, transparent 1.5px),
+  //   radial-gradient(currentColor 1.5px, transparent 1.5px);
+  // background-size: calc(20 * 2px) calc(20 * 2px);
+  // background-position: 0 0, calc(10 * 2px) calc(10 * 2px);
 }
 
-body:before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  z-index: -1;
-  height: 100%;
-  /* background: -webkit-linear-gradient(135deg, var(--color-scheme-base), var(--color-scheme-accent) 85%); */
-  background-image: linear-gradient(to top, #f9fafa, #f9fafa99 100%);
-}
+// body:before {
+//   content: "";
+//   position: absolute;
+//   width: 100%;
+//   z-index: -1;
+//   height: 100%;
+//   /* background: -webkit-linear-gradient(135deg, var(--color-scheme-base), var(--color-scheme-accent) 85%); */
+//   background-image: linear-gradient(to top, #f9fafa, #f9fafa99 100%);
+// }
 
 .background-marked {
   background-color: red;
@@ -103,6 +110,14 @@ body:before {
     ::placeholder,
     .mat-form-field-label {
       color: white;
+    }
+  }
+}
+
+mat-slide-toggle.wrap-toggle-text {
+  label {
+    span.mat-slide-toggle-content {
+      white-space: normal !important;
     }
   }
 }

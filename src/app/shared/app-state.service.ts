@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Subject } from "rxjs";
 import MSOA_lookup from "./MSOA_Lookup.json";
+import LA_LockdownAreas from "./LockdownAreas.json";
 import { CovidTableDataElement, DeviceInfo } from "../models/custom-types";
 import { DeviceDetectorService } from "ngx-device-detector";
 import esri = __esri;
@@ -13,6 +14,23 @@ import Extent from "esri/geometry/Extent";
 export class AppStateService {
   constructor(private deviceService: DeviceDetectorService) {
     this.MSOA_Lookup = this.initaliseMSOAMap();
+
+    this.tier2restrictedLAs = LA_LockdownAreas.tier2Areas
+    this.tier3restrictedLAs = LA_LockdownAreas.tier3Areas
+
+    this.RestrictionsArcade = `var featureLA_code = $feature.LAD13CD;
+    var tier_veryhigh = [${this.tier3restrictedLAs}];
+    var tier_high = [${this.tier2restrictedLAs}];
+
+    if (IndexOf(tier_veryhigh, featureLA_code) != -1) {
+      return "tier3";
+      } else if (IndexOf(tier_high, featureLA_code) != -1) {
+      return "tier2";
+      } else {
+      return "tier1";
+      }
+    `
+
     this.detectDevice();
     console.log(this.deviceInfo)
   }
@@ -106,19 +124,23 @@ export class AppStateService {
 
   /** --------------------External Data Services-------------------- **/
   dataServiceUrl: string =
-    "https://services1.arcgis.com/0IrmI40n5ZYxTUrV/arcgis/rest/services/MSOA_2011_En_20201015_WGS84_std/FeatureServer";
+    "https://services6.arcgis.com/ujpPLfH38KAX8unh/arcgis/rest/services/MSOA_England_COVID_Cases_23_10_2020/FeatureServer";
 
   dataServiceFields = {
     MSOAname: "msoa11_hclnm",
     MSOACode: "msoa11cd",
-    CovidCases: "wk41_7",
+    CovidCases: "latest_7_days",
   };
 
   dataRestrictionsServiceUrl: string =
-    "https://services6.arcgis.com/jH4SYQsbq1iULEVy/arcgis/rest/services/Local_restrictions_areas/FeatureServer";
+    "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/LAD_2013_GB_BSC/FeatureServer";
 
   showRestrictionAreas$ = new Subject<boolean>();
   _showRestrictionAreas: boolean = false;
+
+  tier2restrictedLAs: string[]
+  tier3restrictedLAs: string[]
+  RestrictionsArcade: string
 
   //MSOA Lookup
   MSOA_Lookup;

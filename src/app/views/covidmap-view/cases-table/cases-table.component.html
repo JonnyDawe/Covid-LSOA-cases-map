@@ -1,12 +1,19 @@
-<mat-form-field [color]="'#57aaa8'">
-  <mat-label>Filter Table</mat-label>
-  <input
-    matInput
-    (keyup)="applyFilter($event)"
-    placeholder="Ex. Ashton North"
-    #input
-  />
-</mat-form-field>
+<div class="filter-table-menu">
+  <div class="input-group input-group-sm mat-elevation-z3 w-75">
+    <div class="input-group-prepend">
+      <span class="input-group-text" id="basic-addon">Filter Table:</span>
+    </div>
+    <input
+      type="text"
+      (keyup)="applyFilter($event)"
+      #input
+      class="form-control"
+      placeholder="Eg. Ashton North"
+      aria-label="Filter Table"
+      aria-describedby="basic-addon"
+    />
+  </div>
+</div>
 
 <div
   class="position-relative card-item mat-elevation-z3"

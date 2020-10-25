@@ -1,6 +1,13 @@
-<mat-sidenav-container class="example-container mobile-map-card-height">
-  <mat-sidenav #sidenav [mode]="'over'">
-    <p><button mat-button (click)="sidenav.toggle()">Toggle</button></p>
+<mat-sidenav-container class="sidenav-menu-position mobile-map-card-height">
+  <mat-sidenav class="sidenav-menu-container" #sidenav [mode]="'over'">
+    <div class="menu-item">
+      <mat-slide-toggle
+        class="pr-2 pl-3 wrap-toggle-text"
+        [disabled]="false"
+        [(ngModel)]="appStateService.showRestrictionAreas"
+        >Show Areas With Local Restrictions</mat-slide-toggle
+      >
+    </div>
   </mat-sidenav>
 
   <mat-sidenav-content>

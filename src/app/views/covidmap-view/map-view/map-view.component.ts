@@ -64,6 +64,7 @@ export class MapViewComponent implements OnInit, OnDestroy {
   private _caseslayerview: esri.FeatureLayerView = null;
   private _restrictionsfeatlayer: FeatureLayer = null;
   private _restrictionslayerview: esri.FeatureLayerView = null;
+  private _isMobile
   private _selectedMSOA: esri.Graphic = null;
   private _currentlyHighlighted: {
     highlightGraphic: esri.Graphic;
@@ -83,38 +84,72 @@ export class MapViewComponent implements OnInit, OnDestroy {
       title: "Covid_Layer",
     };
 
-    // configure label properties
-    const casesLabelClass = new LabelClass({
-      labelExpressionInfo: {
-        expression: `$feature.${this.mapService.dataServiceFields.CovidCases}`,
-      },
-      minScale: 1000000,
-      symbol: {
-        type: "text", // autocasts as new TextSymbol()
-        color: "black",
-        haloSize: 1,
-        haloColor: "white",
-      } as esri.SymbolProperties,
-    });
+    if (this._isMobile) {
+      // configure label properties
+      const casesLabelClass = new LabelClass({
+        labelExpressionInfo: {
+          expression: `$feature.${this.mapService.dataServiceFields.CovidCases}`,
+        },
+        minScale: 1000000,
+        symbol: {
+          type: "text", // autocasts as new TextSymbol()
+          color: "black",
+          haloSize: 1,
+          haloColor: "white",
+        } as esri.SymbolProperties,
+      });
 
-    mapcaseslayerproperties.labelingInfo = casesLabelClass;
+      mapcaseslayerproperties.labelingInfo = casesLabelClass;
+    }
 
-    const maprestrictionslayerproperties: any = {
-      url: this.mapService.dataRestrictionsServiceUrl,
-      opacity: 1,
-      renderer: {
-        type: "simple",
+    let restrictionsrenderer = {
+      type: "unique-value",  // autocasts as new UniqueValueRenderer()
+      valueExpression: this.mapService.RestrictionsArcade,
+      defaultSymbol: { type: "simple-fill" },
+      uniqueValueInfos: [{
+        // All features with value of "tier3" will be blue
+        value: "tier3",
         symbol: {
           type: "simple-fill", // autocasts as new SimpleFillSymbol()
-          color: "red",
-          style: "backward-diagonal",
+          color: [92, 0, 210, 0.5],
           outline: {
             // autocasts as new SimpleLineSymbol()
             color: [0, 0, 0, 0.5],
             width: "0.5px",
           },
-        },
-      },
+        }
+      }, {
+        // All features with value of "East" will be green
+        value: "tier2",
+        symbol: {
+          type: "simple-fill", // autocasts as new SimpleFillSymbol()
+          color: [92, 0, 210, 0.2],
+          outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: [0, 0, 0, 0.5],
+            width: "0.5px",
+          },
+        }
+      }, {
+        // All features with value of "South" will be red
+        value: "tier1",
+        symbol: {
+          type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+          color: [0, 0, 0, 0],
+          outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: [0, 0, 0, 0],
+            width: "0.5px",
+          },
+        }
+      }]
+    };
+
+
+    const maprestrictionslayerproperties: any = {
+      url: this.mapService.dataRestrictionsServiceUrl,
+      opacity: 1,
+      renderer: restrictionsrenderer
     };
 
     this._casesfeatlayer = new FeatureLayer(mapcaseslayerproperties);
@@ -224,6 +259,7 @@ export class MapViewComponent implements OnInit, OnDestroy {
     // })
     // await this._view.graphics.addMany(graphicsToDisplay)
 
+
     //initialise property watchers:
     this.currentMapExtentHandle = this._view.watch(
       "extent",
@@ -234,15 +270,18 @@ export class MapViewComponent implements OnInit, OnDestroy {
       }, 100)
     );
 
-    // initialise user events.
-    this._view.on("pointer-move", this.debounce(this.hoverHandler, 5));
-
+    if (!this._isMobile) {
+      // initialise user events.
+      this._view.on("pointer-move", this.debounce(this.hoverHandler, 5));
+    }
     //future work...
     // this._view.on("click", this.clickHandler);
     return this._view;
   }
 
   ngOnInit(): void {
+    this._isMobile = this.mapService.deviceInfo.isMobile
+
     // Initialize MapView and return an instance of MapView
     this.initializeMap().then((mapView) => {
       // The map has been initialized
