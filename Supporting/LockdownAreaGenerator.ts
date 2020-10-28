@@ -1,4 +1,5 @@
 const csvFilePath = './commonslibrary-coronavirus-restrictions-data.csv'
+//https://github.com/ukparliament/uk.parliament-visual/blob/master/research/visualisations/coronavirus-restrictions-map/commonslibrary-coronavirus-restrictions-data.csv
 const csv = require('csvtojson')
 const fs = require("fs");
 

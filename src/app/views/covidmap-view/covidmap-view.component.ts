@@ -3,16 +3,18 @@ import { AppStateService } from "../../shared/app-state.service";
 import { LoaderService } from "../../shared/loader/loader.service";
 import { Subscription } from "rxjs";
 
-//todo - Destroy Subscriptions!!!!
 @Component({
   selector: "app-covidmapview",
   templateUrl: "./covidmap-view.component.html",
   styleUrls: ["./covidmap-view.component.scss"],
 })
 export class CovidmapViewComponent implements OnInit, OnDestroy {
+
+  // Subscriptions and State
   mapLoadedSubscription: Subscription;
   mapLoadingState: boolean = true;
 
+  /** record whether only the map is beeing displayed. */
   public mapOnly: boolean = false;
 
   constructor(
@@ -21,12 +23,14 @@ export class CovidmapViewComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+
+    // Register Loader and listen for updates to loading state.
     this.loaderService.register({ id: "map", show: false });
-    this.displayLoader("map", this.mapService.mapLoaded);
+    this.loaderService.toggleDisplayLoader("map", this.mapService.mapLoaded);
 
     this.mapLoadedSubscription = this.mapService.mapLoaded$.subscribe(
       (mapLoaded) => {
-        this.displayLoader("map", mapLoaded);
+        this.loaderService.toggleDisplayLoader("map", mapLoaded);
         this.mapLoadingState = !mapLoaded;
       }
     );
@@ -36,16 +40,8 @@ export class CovidmapViewComponent implements OnInit, OnDestroy {
     this.mapLoadedSubscription.unsubscribe()
   }
 
-  displayLoader(id: string, loadedStatus: boolean) {
-    console.log("id sent to loader:", id);
-    if (loadedStatus) {
-      this.loaderService.hideLoader(id);
-      return;
-    } else {
-      this.loaderService.showLoader(id);
-    }
-  }
 
+  /** Toggle between map only and map and table state. */
   toggleMapWidth() {
     this.mapOnly = !this.mapOnly;
   }

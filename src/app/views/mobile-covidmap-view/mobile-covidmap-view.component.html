@@ -10,10 +10,43 @@
     </div>
   </mat-sidenav>
 
-  <mat-sidenav-content>
-    <div class="h-100">
+  <mat-sidenav-content class="overflow-hidden">
+    <div
+      [ngClass]="{ 'h-50': !mapOnly, 'h-100': mapOnly }"
+      class="mobile-map-container animate-width"
+    >
+      <app-map appMapTooltip class="d-block h-100 map-focus"></app-map>
       <app-loader class="h-100" [id]="'map'"></app-loader>
-      <app-mapview appMapTooltip class="d-block h-100 map-focus"></app-mapview>
+      <button
+        class="table-toggle btn btn-primary mat-elevation-z2 p-0"
+        (click)="toggleTableDraw()"
+      >
+        <svg
+          *ngIf="mapOnly"
+          class="my-auto"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+        >
+          <path fill="none" d="M0 0h24v24H0z" />
+          <path d="M3 19h18v2H3v-2zm10-9v8h-2v-8H4l8-8 8 8h-7z" />
+        </svg>
+        <svg
+          *ngIf="!mapOnly"
+          class="my-auto"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+        >
+          <path fill="none" d="M0 0h24v24H0z" />
+          <path
+            d="M3 19h18v2H3v-2zm10-5.828L19.071 7.1l1.414 1.414L12 17 3.515 8.515 4.929 7.1 11 13.17V2h2v11.172z"
+          />
+        </svg>
+      </button>
     </div>
+    <app-cases-table *ngIf="!mapOnly"></app-cases-table>
   </mat-sidenav-content>
 </mat-sidenav-container>

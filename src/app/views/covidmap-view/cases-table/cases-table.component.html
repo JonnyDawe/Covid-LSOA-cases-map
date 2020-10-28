@@ -1,4 +1,4 @@
-<div class="filter-table-menu">
+<div *ngIf="isDesktop" class="filter-table-menu">
   <div class="input-group input-group-sm mat-elevation-z3 w-75">
     <div class="input-group-prepend">
       <span class="input-group-text" id="basic-addon">Filter Table:</span>
@@ -16,8 +16,11 @@
 </div>
 
 <div
-  class="position-relative card-item mat-elevation-z3"
-  style="height: calc(100% - 65.5px)"
+  class="position-relative mat-elevation-z3"
+  [ngClass]="{
+    'card-item desktop-table-card': isDesktop,
+    'mt-1 h-50': !isDesktop
+  }"
 >
   <app-loader class="h-100" [id]="'table'"></app-loader>
   <div
@@ -25,6 +28,7 @@
     style="overflow-y: auto; height: calc(100% - 56px)"
   >
     <table
+      [ngClass]="{ 'table-desktop': isDesktop, 'table-mobile': !isDesktop }"
       mat-table
       [dataSource]="_dataSource"
       matSort
@@ -64,8 +68,3 @@
   </div>
   <mat-paginator [hidePageSize]="true" showFirstLastButtons></mat-paginator>
 </div>
-
-<!-- <mat-paginator
-[pageSizeOptions]="[20, 40]"
-showFirstLastButtons
-></mat-paginator> -->

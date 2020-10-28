@@ -7,7 +7,7 @@ export class LoaderService {
   loaderSubject = new Subject<Set<Loader>>();
   loadingStatusCache = new Set<Loader>();
 
-  constructor() {}
+  constructor() { }
 
   public register(loader: Loader): void {
     this.loadingStatusCache.add(loader);
@@ -38,4 +38,21 @@ export class LoaderService {
       }
     });
   }
+
+  /** Toggle Display loader - send if to loader service to display or hide the spinner.
+   *  @param id - the registered loader id.
+   *  @param loadedStatus - maploading state.
+   */
+  toggleDisplayLoader(id: string, loadedStatus: boolean) {
+    console.log("id sent to loader:", id);
+    if (loadedStatus) {
+      //loading has completed => hide loader
+      this.hideLoader(id);
+      return;
+    } else {
+      //loading start => show loader
+      this.showLoader(id);
+    }
+  }
+
 }

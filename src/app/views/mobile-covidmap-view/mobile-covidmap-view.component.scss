@@ -21,3 +21,17 @@
   flex-direction: column;
   justify-content: center;
 }
+
+.table-toggle {
+  height: 40px;
+  width: 40px;
+  position: absolute;
+  bottom: 0%;
+  right: 50%;
+  z-index: 1000;
+  transform: translate(50%, -20%);
+}
+
+.mobile-map-container {
+  position: relative;
+}

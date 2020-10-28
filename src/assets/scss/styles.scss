@@ -19,14 +19,14 @@ body {
   min-height: -webkit-fill-available;
   overflow: hidden;
   font-family: "Lato", sans-serif;
-  background-color: #f9fafa;
+  background-color: #e6a9ff1f;
 
-  background: linear-gradient(135deg, var(--bg) 25%, transparent 25%) -540px 0,
-    linear-gradient(225deg, var(--bg) 35%, transparent 25%) 10px 0,
-    linear-gradient(315deg, var(--bg) 5%, transparent 5%),
-    linear-gradient(45deg, var(--bg) 60%, #00000021 25%);
-  background-size: 150px 150px;
-  background-color: var(--stripe);
+  // background: linear-gradient(135deg, var(--bg) 25%, transparent 25%) -540px 0,
+  //   linear-gradient(225deg, var(--bg) 35%, transparent 25%) 10px 0,
+  //   linear-gradient(315deg, var(--bg) 5%, transparent 5%),
+  //   linear-gradient(45deg, var(--bg) 60%, #00000021 25%);
+  // background-size: 150px 150px;
+  // background-color: var(--stripe);
 
   // background-image: radial-gradient(#000000 1.5px, transparent 1.5px),
   //   radial-gradient(currentColor 1.5px, transparent 1.5px);

@@ -1,0 +1,13 @@
+/* import the required JSAPI css */
+@import url("https://js.arcgis.com/4.17/esri/themes/light/main.css");
+
+.map-container-element {
+  height: calc(100% - 45px);
+}
+
+.esri-view {
+  height: 100%;
+}
+.esri-view {
+  outline: none !important;
+}

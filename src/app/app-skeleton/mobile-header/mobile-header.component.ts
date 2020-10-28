@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { SidenavService } from 'src/app/shared/sidenav.service';
-
+import { DialogAboutComponent } from "../dialog-about/dialog-about.component";
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-mobile-header',
@@ -8,18 +9,20 @@ import { SidenavService } from 'src/app/shared/sidenav.service';
   styleUrls: ['./mobile-header.component.scss']
 })
 export class MobileHeaderComponent implements OnInit {
-  constructor(private sidenav: SidenavService) { }
+  constructor(private sidenav: SidenavService, public dialog: MatDialog) { }
 
   toggleActive: boolean = false;
 
   toggleRightSidenav() {
     this.toggleActive = !this.toggleActive;
     this.sidenav.toggle();
-
-    console.log('Clicked');
   }
 
   ngOnInit(): void {
+  }
+
+  openDialog() {
+    this.dialog.open(DialogAboutComponent, { autoFocus: false });
   }
 
 }

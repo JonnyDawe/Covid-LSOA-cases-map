@@ -11,37 +11,39 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./mobile-covidmap-view.component.scss']
 })
 export class MobileCovidmapViewComponent implements OnInit, AfterViewInit {
+
+  // Subscriptions and State
   mapLoadedSubscription: Subscription;
   mapLoadingState: boolean = true;
+  public mapOnly: boolean = true;
 
+  // access material sidenav element in HTML template.
   @ViewChild('sidenav') public sidenav: MatSidenav;
+
+  // inject appstate, loader and sidenav services.
   constructor(private sidenavService: SidenavService, public appStateService: AppStateService, private loaderService: LoaderService) { }
 
   ngOnInit(): void {
+
+    // Register Loader and listen for updates to loading state.
     this.loaderService.register({ id: "map", show: false });
-    this.displayLoader("map", this.appStateService.mapLoaded);
+    this.loaderService.toggleDisplayLoader("map", this.appStateService.mapLoaded);
 
     this.mapLoadedSubscription = this.appStateService.mapLoaded$.subscribe(
       (mapLoaded) => {
-        this.displayLoader("map", mapLoaded);
+        this.loaderService.toggleDisplayLoader("map", mapLoaded);
         this.mapLoadingState = !mapLoaded;
       }
     );
   }
 
-  displayLoader(id: string, loadedStatus: boolean) {
-    console.log("id sent to loader:", id);
-    if (loadedStatus) {
-      this.loaderService.hideLoader(id);
-      return;
-    } else {
-      this.loaderService.showLoader(id);
-    }
-  }
-
+  // register sidenav with sidenav service.
   ngAfterViewInit(): void {
     this.sidenavService.setSidenav(this.sidenav);
   }
 
+  toggleTableDraw() {
+    this.mapOnly = !this.mapOnly;
+  }
 
 }

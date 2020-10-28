@@ -38,11 +38,11 @@ import { Extent } from "esri/geometry";
  * - integrate with an external api using the PHE api.
  */
 @Component({
-  selector: "app-mapview",
-  templateUrl: "./map-view.component.html",
-  styleUrls: ["./map-view.component.scss"],
+  selector: "app-map",
+  templateUrl: "./cases-map.component.html",
+  styleUrls: ["./cases-map.component.scss"],
 })
-export class MapViewComponent implements OnInit, OnDestroy {
+export class CasesMapComponent implements OnInit, OnDestroy {
   //Tooltip eventEmitters
   @Output() showTooltip = new EventEmitter<ToolTipInfo>();
   @Output() hideTooltip = new EventEmitter<void>();

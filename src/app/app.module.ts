@@ -12,7 +12,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { CovidmapViewComponent } from './views/covidmap-view/covidmap-view.component';
 import { StatsViewComponent } from './views/stats-view/stats-view.component';
 import { HeaderComponent } from './app-skeleton/header/header.component';
-import { MapViewComponent } from './views/covidmap-view/map-view/map-view.component';
+import { CasesMapComponent } from './views/covidmap-view/cases-map/cases-map.component';
 import { CasesTableComponent } from './views/covidmap-view/cases-table/cases-table.component';
 import { DialogAboutComponent } from './app-skeleton/dialog-about/dialog-about.component';
 import { MobileCovidmapViewComponent } from './views/mobile-covidmap-view/mobile-covidmap-view.component';
@@ -44,7 +44,7 @@ import { SidenavService } from './shared/sidenav.service';
     StatsViewComponent,
     HeaderComponent,
     DialogAboutComponent,
-    MapViewComponent,
+    CasesMapComponent,
     CasesTableComponent,
     MapTooltipDirective,
     MobileCovidmapViewComponent,

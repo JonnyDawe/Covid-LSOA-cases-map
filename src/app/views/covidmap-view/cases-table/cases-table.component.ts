@@ -19,16 +19,6 @@ import { CovidTableDataElement } from "../../../models/custom-types";
 import { LoaderService } from "../../../shared/loader/loader.service";
 import { AppStateService } from '../../../shared/app-state.service';
 
-//we have the current map extent.
-//we have the data from the intial query
-//on extent changes the data for the table needs to be filterer
-
-//store original querydata.
-//filter TABLE DATA using the extent of the map and the geometry engine.
-
-//create a lookup for MSOA region and UTLA Name to help with table reading!
-//Create a nice looking popup using JSON from Commons librarys for just England.
-//Create a Script to convert CSV to JSON as needed.
 
 @Component({
   selector: "app-cases-table",
@@ -37,33 +27,43 @@ import { AppStateService } from '../../../shared/app-state.service';
 })
 export class CasesTableComponent
   implements OnInit, OnDestroy, AfterViewInit {
-  //Map Extent Subscription
+
+  // Map Extent Subscription - for querying features in view.
   mapExtentSubscription: Subscription;
+
+  // Loading state subscription
   tableLoadedSubscription: Subscription;
 
-  //Map data object to store lookup table information.
-  private _MSOAGeometryLookUp: Map<string, esri.Geometry>;
+  // Query Results
   private _queryResults: esri.FeatureSet;
+
+  /** All Covid Cases Table Records
+   *  - A filtered subset is usually presented. */
   private _allData: CovidTableDataElement[];
 
-  //table:
+  /** Track Device State (desktop vs mobile)
+   *  -  functionality in html template is switched on and off depending on
+   *     whether it is a desktop view
+   *  */
+  public isDesktop: boolean
+
+  // Material Table Component State
   public _dataSource;
   public displayedColumns: string[] = ["name", "localAuthority", "cases"];
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
 
   constructor(
-    private mapService: AppStateService,
+    public appStateService: AppStateService,
     private loaderService: LoaderService
   ) { }
 
-  /**initialise Table */
+  /**Function to Initialise Table */
   async initialiseTable() {
-    this._MSOAGeometryLookUp = new Map();
 
-    if (!this.mapService.tableData) {
+    if (!this.appStateService.tableData) {
       let queryTask = new QueryTask({
-        url: this.mapService.dataServiceUrl + "/0",
+        url: this.appStateService.dataServiceUrl + "/0",
       });
 
       let params = new Query({
@@ -87,30 +87,29 @@ export class CasesTableComponent
 
       this._allData = this._queryResults.features.map((feature) => {
         const MSOACode =
-          feature.attributes[this.mapService.dataServiceFields.MSOACode];
+          feature.attributes[this.appStateService.dataServiceFields.MSOACode];
 
-        this._MSOAGeometryLookUp.set(MSOACode, feature.geometry);
 
         return {
           MSOAName:
-            feature.attributes[this.mapService.dataServiceFields.MSOAname],
-          MSOALocalAuthority: this.mapService.MSOA_Lookup.get(MSOACode).LAD20NM,
+            feature.attributes[this.appStateService.dataServiceFields.MSOAname],
+          MSOALocalAuthority: this.appStateService.MSOA_Lookup.get(MSOACode).LAD20NM,
           cases: feature.attributes[
-            this.mapService.dataServiceFields.CovidCases
+            this.appStateService.dataServiceFields.CovidCases
           ]
-            ? feature.attributes[this.mapService.dataServiceFields.CovidCases]
+            ? feature.attributes[this.appStateService.dataServiceFields.CovidCases]
             : 0,
           MSOACode: MSOACode,
           MSOAGeometry: feature.geometry,
         };
       });
-      this.mapService.tableData = this._allData;
+      this.appStateService.tableData = this._allData;
     } else {
-      this._allData = this.mapService.tableData;
+      this._allData = this.appStateService.tableData;
     }
 
 
-    let extentFilter = this.mapService.mapCurrentExtent ? this.mapService.mapCurrentExtent : this.mapService._mapStartingExtent
+    let extentFilter = this.appStateService.mapCurrentExtent ? this.appStateService.mapCurrentExtent : this.appStateService._mapStartingExtent
 
     this._dataSource = new MatTableDataSource<{
       MSOAName: string;
@@ -127,9 +126,10 @@ export class CasesTableComponent
   }
 
   ngOnInit(): void {
+    this.isDesktop = this.appStateService.deviceInfo.isDesktop
     this.loaderService.register({ id: "table", show: false });
-    this.displayLoader("table", this.mapService.tableLoaded);
-    this.tableLoadedSubscription = this.mapService.tableLoaded$.subscribe(
+    this.displayLoader("table", this.appStateService.tableLoaded);
+    this.tableLoadedSubscription = this.appStateService.tableLoaded$.subscribe(
       (tableLoaded) => {
         this.displayLoader("table", tableLoaded);
       }
@@ -140,16 +140,16 @@ export class CasesTableComponent
     this.initialiseTable().then(() => {
       this._dataSource.paginator = this.paginator;
       this._dataSource.sort = this.sort;
-      this.mapService.tableLoaded = true;
+      this.appStateService.tableLoaded = true;
     });
 
-    this.mapExtentSubscription = this.mapService.mapCurrentExtent$.subscribe(
+    this.mapExtentSubscription = this.appStateService.mapCurrentExtent$.subscribe(
       (extent) => {
         if (this._allData) {
           this._dataSource.data = this._allData.filter((element) => {
             return geometryEngine.intersects(
               element.MSOAGeometry,
-              this.mapService.mapCurrentExtent
+              this.appStateService.mapCurrentExtent
             );
           });
         }
@@ -158,7 +158,7 @@ export class CasesTableComponent
   }
 
   tableClickHandler(row) {
-    this.mapService.panToTarget(this._MSOAGeometryLookUp.get(row.MSOACode));
+    this.appStateService.panToTarget(row.MSOAGeometry);
   }
 
   applyFilter(event: Event) {
@@ -183,7 +183,7 @@ export class CasesTableComponent
   ngOnDestroy(): void {
     this.mapExtentSubscription.unsubscribe();
     this.tableLoadedSubscription.unsubscribe();
-    this.mapService.tableLoaded = false;
+    this.appStateService.tableLoaded = false;
   }
 
   /**There is a server side cap on the number of features returned from a single
