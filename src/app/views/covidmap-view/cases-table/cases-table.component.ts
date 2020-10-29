@@ -7,13 +7,13 @@ import {
   OnDestroy,
 } from "@angular/core";
 import esri = __esri;
-import QueryTask from "esri/tasks/QueryTask";
-import Query from "esri/tasks/support/Query";
-import * as geometryEngine from "esri/geometry/geometryEngine";
+import QueryTask from "@arcgis/core/tasks/QueryTask";
+import Query from "@arcgis/core/tasks/support/Query";
+import * as geometryEngine from "@arcgis/core/geometry/geometryEngine";
 import { MatPaginator } from "@angular/material/paginator";
 import { MatTableDataSource } from "@angular/material/table";
 import { MatSort } from "@angular/material/sort";
-import SpatialReference from "esri/geometry/SpatialReference";
+import SpatialReference from "@arcgis/core/geometry/SpatialReference";
 import { Subscription } from "rxjs";
 import { CovidTableDataElement } from "../../../models/custom-types";
 import { LoaderService } from "../../../shared/loader/loader.service";

@@ -5,7 +5,7 @@ import LA_LockdownAreas from "./LockdownAreas.json";
 import { CovidTableDataElement, DeviceInfo } from "../models/custom-types";
 import { DeviceDetectorService } from "ngx-device-detector";
 import esri = __esri;
-import Extent from "esri/geometry/Extent";
+import Extent from "@arcgis/core/geometry/Extent";
 
 /**Service for storing Application State**/
 @Injectable({

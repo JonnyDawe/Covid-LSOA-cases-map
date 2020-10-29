@@ -9,22 +9,22 @@ import {
 } from "@angular/core";
 
 import esri = __esri;
-import Map from "esri/Map";
-import MapView from "esri/views/MapView";
-import FeatureLayer from "esri/layers/FeatureLayer";
-import Graphic from "esri/Graphic";
-import Search from "esri/widgets/Search";
-import Locate from "esri/widgets/Locate";
-import Locator from "esri/tasks/Locator";
-import LabelClass from "esri/layers/support/LabelClass";
-import SimpleFillSymbol from "esri/symbols/SimpleFillSymbol";
+import Map from "@arcgis/core/Map";
+import MapView from "@arcgis/core/views/MapView";
+import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
+import Graphic from "@arcgis/core/Graphic";
+import Search from "@arcgis/core/widgets/Search";
+import Locate from "@arcgis/core/widgets/Locate";
+import Locator from "@arcgis/core/tasks/Locator";
+import LabelClass from "@arcgis/core/layers/support/LabelClass";
+import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol";
 import { ToolTipInfo } from "../../../models/custom-types";
-import { createContinuousRenderer } from "esri/smartMapping/renderers/color";
-import * as colorSchemes from "esri/smartMapping/symbology/color";
-import Color from "esri/Color";
+import { createContinuousRenderer } from "@arcgis/core/smartMapping/renderers/color";
+import colorSchemes from "@arcgis/core/smartMapping/symbology/color";
+import Color from "@arcgis/core/Color";
 import { Subscription } from "rxjs";
 import { AppStateService } from "../../../shared/app-state.service";
-import { Extent } from "esri/geometry";
+import { Extent } from "@arcgis/core/geometry";
 
 /**
  * To do:
@@ -152,8 +152,8 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       renderer: restrictionsrenderer
     };
 
-    this._casesfeatlayer = new FeatureLayer(mapcaseslayerproperties);
-    this._restrictionsfeatlayer = new FeatureLayer(
+    this._casesfeatlayer = await new FeatureLayer(mapcaseslayerproperties);
+    this._restrictionsfeatlayer = await new FeatureLayer(
       maprestrictionslayerproperties
     );
 
