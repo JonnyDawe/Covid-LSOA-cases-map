@@ -5,6 +5,7 @@ import { FormsModule } from "@angular/forms";
 
 //App State
 import { LoaderModule } from './shared/loader/loader.module';
+import { SidenavService } from './shared/sidenav.service';
 
 //UI Components
 import { AppComponent } from './app.component';
@@ -31,12 +32,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { SidenavService } from './shared/sidenav.service';
 
-
-
-
-
+//ChartJS Modules
+import { ChartsModule } from 'ng2-charts';
+import { NationalCasesGraphComponent } from './views/stats-view/national-cases-graph/national-cases-graph.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -49,6 +48,7 @@ import { SidenavService } from './shared/sidenav.service';
     MapTooltipDirective,
     MobileCovidmapViewComponent,
     MobileHeaderComponent,
+    NationalCasesGraphComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -66,7 +66,8 @@ import { SidenavService } from './shared/sidenav.service';
     MatIconModule,
     MatToolbarModule,
     MatButtonModule,
-    MatSidenavModule
+    MatSidenavModule,
+    ChartsModule
   ],
   providers: [SidenavService],
   bootstrap: [AppComponent]

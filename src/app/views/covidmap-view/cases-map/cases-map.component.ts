@@ -29,11 +29,7 @@ import { Extent } from "@arcgis/core/geometry";
 /**
  * To do:
  * ideas...
- * - add button to toggle display of areas with restrictions
  * - click to produce good looking pop-up based on attribute data and customise the styling.
- * - think about how to make table more interactive... e.g filter by extent! - perfect idea...
- * - add msoa regional data.
- * - refactor for a really clean code structure.
  * - filter based on extent using a radio button.
  * - integrate with an external api using the PHE api.
  */
@@ -43,6 +39,7 @@ import { Extent } from "@arcgis/core/geometry";
   styleUrls: ["./cases-map.component.scss"],
 })
 export class CasesMapComponent implements OnInit, OnDestroy {
+
   //Tooltip eventEmitters
   @Output() showTooltip = new EventEmitter<ToolTipInfo>();
   @Output() hideTooltip = new EventEmitter<void>();
@@ -60,7 +57,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
   /**State */
   private _map: Map = null;
   private _view: MapView = null;
-  private _casesfeatlayer: FeatureLayer = null;
+  private _MSOAcasesFeatLayer: FeatureLayer = null;
   private _caseslayerview: esri.FeatureLayerView = null;
   private _restrictionsfeatlayer: FeatureLayer = null;
   private _restrictionslayerview: esri.FeatureLayerView = null;
@@ -71,14 +68,160 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     handle: esri.Handle;
   };
 
-  //Inject mapService
-  constructor(public mapService: AppStateService) { }
+  //Inject appStateService
+  constructor(public appStateService: AppStateService) { }
 
   //Initialise Esri Map
   async initializeMap() {
+
+    // initialise the MSOACases Layer - aync due to generating of renderer.
+    const casesLayerPromise = this.initialiseMSOACasesLayer()
+
+    // initialise the restriction area layer
+    this.initialiseRestrictionAreaLayer()
+
+
+    // Define Map properties
+    const mapProperties = {
+      basemap: this.appStateService.mapBasemap,
+    };
+
+    // Create Map
+    this._map = new Map(mapProperties);
+
+    // Define mapView Properties
+    const mapViewProperties = {
+      container: this.mapViewEl.nativeElement,
+      center: this.appStateService.mapCentre,
+      zoom: this.appStateService.mapZoomLevel,
+      map: this._map,
+      highlightOptions: {
+        color: "orange", //set highlight colour for hover.
+      },
+    };
+
+    //initialise mapView
+    this._view = new MapView(mapViewProperties);
+    const searchWidget = this.initialiseSearchWidget()
+    const locateBtn = new Locate({ view: this._view });
+
+    // wait for the map to load and then add ui widgets
+    await this._view.when();
+    this._view.ui.add(searchWidget, {
+      position: "top-right",
+    });
+    this._view.ui.add(locateBtn, {
+      position: "top-left",
+    });
+
+    //wait for all feature layer promises to resolve.
+    await Promise.all([casesLayerPromise])
+
+    //Add MSOA Cases feature layer.
+    this._map.add(this._MSOAcasesFeatLayer);
+    this._caseslayerview = await this._view.whenLayerView(this._MSOAcasesFeatLayer);
+
+    if (this.appStateService.showRestrictionAreas) {
+      this._map.add(this._restrictionsfeatlayer);
+      this._restrictionslayerview = await this._view.whenLayerView(
+        this._restrictionsfeatlayer
+      );
+    }
+
+
+    // CIM Symbol Experiment.
+    // let graphicsToDisplay = this.appStateService._tableData.map((element) => {
+
+    //   let cimmarkerSymbol = {
+    //     type: "cim", // autocasts as new SimpleMarkerSymbol()
+    //     data: {
+    //       type: "CIMSymbolReference",
+    //       symbol: this.getCIMPointSymbolData(element.cases)
+    //     }
+
+    //   };
+
+    //   return new Graphic({
+    //     geometry: (element.MSOAGeometry as esri.Polygon).centroid as esri.GeometryProperties,
+    //     symbol: cimmarkerSymbol as esri.SymbolProperties
+    //   })
+
+    // })
+    // await this._view.graphics.addMany(graphicsToDisplay)
+
+
+    //initialise property watchers:
+    this.currentMapExtentHandle = this._view.watch(
+      "extent",
+      this.debounce((newValue: esri.Extent) => {
+        if (newValue) {
+          this.appStateService.mapCurrentExtent = newValue;
+        }
+      }, 100)
+    );
+
+    // if not on mobile device enable hover tooltips interactions.
+    if (!this._isMobile) {
+      // initialise user events.
+      this._view.on("pointer-move", this.debounce(this.hoverHandler, 5));
+    }
+    //future work...
+    // this._view.on("click", this.clickHandler);
+    return this._view;
+  }
+
+  ngOnInit(): void {
+    this._isMobile = this.appStateService.deviceInfo.isMobile
+
+    // Initialize MapView and return an instance of MapView
+    this.initializeMap().then((mapView) => {
+      // The map has been initialized
+      console.log("mapView ready: ", mapView.ready);
+      this.appStateService.mapLoaded = mapView.ready;
+    });
+
+    //Set up Subscription to panrequests.
+    this.panRequestSubscription = this.appStateService.panRequest$.subscribe(
+      (panTarget) => {
+        this.panMap(panTarget);
+      }
+    );
+
+    //subscribe to restrictions layer visibility state.
+    this.restrictionsLayerShowSubscription = this.appStateService.showRestrictionAreas$.subscribe(
+      async (show) => {
+        if (show) {
+          await this._map.add(this._restrictionsfeatlayer);
+          this._restrictionslayerview = await this._view.whenLayerView(
+            this._restrictionsfeatlayer
+          );
+        } else {
+          await this._map.remove(this._restrictionsfeatlayer);
+        }
+      }
+    );
+  }
+
+  ngOnDestroy() {
+    //Destroy view and record current map state.
+    if (this._view) {
+      this.appStateService.mapCentre = [
+        this._view.center.longitude,
+        this._view.center.latitude,
+      ];
+      this.appStateService.mapZoomLevel = this._view.zoom;
+      this._view.container = null;
+    }
+    this.appStateService.mapLoaded = false;
+  }
+
+
+  /********Initialise Feature Layers *********/
+
+  async initialiseMSOACasesLayer() {
     //configure the mapcases feature layer properties:
     let mapcaseslayerproperties: any = {
-      url: this.mapService.dataServiceUrl,
+      url: this.appStateService.dataServiceUrl,
       outFields: ["*"],
       opacity: 0.7,
       title: "Covid_Layer",
@@ -88,7 +231,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       // configure label properties
       const casesLabelClass = new LabelClass({
         labelExpressionInfo: {
-          expression: `$feature.${this.mapService.dataServiceFields.CovidCases}`,
+          expression: `$feature.${this.appStateService.dataServiceFields.CovidCases}`,
         },
         minScale: 1000000,
         symbol: {
@@ -102,9 +245,16 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       mapcaseslayerproperties.labelingInfo = casesLabelClass;
     }
 
+
+    this._MSOAcasesFeatLayer = new FeatureLayer(mapcaseslayerproperties);
+    const casesColorRenderer = await this.generateMSOACasesRenderer();
+    this._MSOAcasesFeatLayer.renderer = casesColorRenderer
+  }
+
+  initialiseRestrictionAreaLayer() {
     let restrictionsrenderer = {
       type: "unique-value",  // autocasts as new UniqueValueRenderer()
-      valueExpression: this.mapService.RestrictionsArcade,
+      valueExpression: this.appStateService.RestrictionsArcade,
       defaultSymbol: { type: "simple-fill" },
       uniqueValueInfos: [{
         // All features with value of "tier3" will be blue
@@ -147,45 +297,30 @@ export class CasesMapComponent implements OnInit, OnDestroy {
 
 
     const maprestrictionslayerproperties: any = {
-      url: this.mapService.dataRestrictionsServiceUrl,
+      url: this.appStateService.dataRestrictionsServiceUrl,
       opacity: 1,
       renderer: restrictionsrenderer
     };
 
-    this._casesfeatlayer = await new FeatureLayer(mapcaseslayerproperties);
-    this._restrictionsfeatlayer = await new FeatureLayer(
+    this._restrictionsfeatlayer = new FeatureLayer(
       maprestrictionslayerproperties
     );
 
-    // Configure the Map
-    const mapProperties = {
-      basemap: this.mapService.mapBasemap,
-    };
+  }
 
-    this._map = new Map(mapProperties);
+  /********Initialise Widgets *********/
+  initialiseSearchWidget() {
 
-    // Initialize the MapView
-    const mapViewProperties = {
-      container: this.mapViewEl.nativeElement,
-      center: this.mapService.mapCentre,
-      zoom: this.mapService.mapZoomLevel,
-      map: this._map,
-      highlightOptions: {
-        color: "orange", //set highlight colour for hover.
-      },
-    };
-
-    this._view = new MapView(mapViewProperties);
-
+    //Filter the search Extent to limit results to UK
     let filterSearchExtent = new Extent({
       spatialReference: {
         // "latestWkid": 3857,
         wkid: 4326,
       },
-      xmin: -7.9247558,
-      ymin: 47.8775933,
-      xmax: 5.3247559,
-      ymax: 57.543777,
+      xmin: -10,
+      ymin: 45,
+      xmax: 8,
+      ymax: 60,
     });
 
     //initialise the sources for the search widget.
@@ -215,112 +350,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       sources: sources,
     });
 
-    const locateBtn = new Locate({ view: this._view });
-
-    // wait for the map to load
-    await this._view.when();
-    //Create search widget:
-    await this._view.ui.add(searchWidget, {
-      position: "top-right",
-    });
-    await this._view.ui.add(locateBtn, {
-      position: "top-left",
-    });
-    //Generate Renderer for dataService
-    await this.generateRenderer();
-    //Add feature layer.
-    await this._map.add(this._casesfeatlayer);
-
-    if (this.mapService.showRestrictionAreas) {
-      await this._map.add(this._restrictionsfeatlayer);
-      this._restrictionslayerview = await this._view.whenLayerView(
-        this._restrictionsfeatlayer
-      );
-    }
-
-    this._caseslayerview = await this._view.whenLayerView(this._casesfeatlayer);
-
-    // let graphicsToDisplay = this.mapService._tableData.map((element) => {
-
-    //   let cimmarkerSymbol = {
-    //     type: "cim", // autocasts as new SimpleMarkerSymbol()
-    //     data: {
-    //       type: "CIMSymbolReference",
-    //       symbol: this.getCIMPointSymbolData(element.cases)
-    //     }
-
-    //   };
-
-    //   return new Graphic({
-    //     geometry: (element.MSOAGeometry as esri.Polygon).centroid as esri.GeometryProperties,
-    //     symbol: cimmarkerSymbol as esri.SymbolProperties
-    //   })
-
-    // })
-    // await this._view.graphics.addMany(graphicsToDisplay)
-
-
-    //initialise property watchers:
-    this.currentMapExtentHandle = this._view.watch(
-      "extent",
-      this.debounce((newValue: esri.Extent) => {
-        if (newValue) {
-          this.mapService.mapCurrentExtent = newValue;
-        }
-      }, 100)
-    );
-
-    if (!this._isMobile) {
-      // initialise user events.
-      this._view.on("pointer-move", this.debounce(this.hoverHandler, 5));
-    }
-    //future work...
-    // this._view.on("click", this.clickHandler);
-    return this._view;
-  }
-
-  ngOnInit(): void {
-    this._isMobile = this.mapService.deviceInfo.isMobile
-
-    // Initialize MapView and return an instance of MapView
-    this.initializeMap().then((mapView) => {
-      // The map has been initialized
-      console.log("mapView ready: ", mapView.ready);
-      this.mapService.mapLoaded = mapView.ready;
-    });
-
-    //Set up Subscription to panrequests.
-    this.panRequestSubscription = this.mapService.panRequest$.subscribe(
-      (panTarget) => {
-        this.panMap(panTarget);
-      }
-    );
-
-    this.restrictionsLayerShowSubscription = this.mapService.showRestrictionAreas$.subscribe(
-      async (show) => {
-        if (show) {
-          await this._map.add(this._restrictionsfeatlayer);
-          this._restrictionslayerview = await this._view.whenLayerView(
-            this._restrictionsfeatlayer
-          );
-        } else {
-          await this._map.remove(this._restrictionsfeatlayer);
-        }
-      }
-    );
-  }
-
-  ngOnDestroy() {
-    //Destroy view and record current map state.
-    if (this._view) {
-      this.mapService.mapCentre = [
-        this._view.center.longitude,
-        this._view.center.latitude,
-      ];
-      this.mapService.mapZoomLevel = this._view.zoom;
-      this._view.container = null;
-    }
-    this.mapService.mapLoaded = false;
+    return searchWidget
   }
 
   /********Utility Functions for Map Interaction. *********/
@@ -357,15 +387,16 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     };
   }
 
+
   clickHandler: esri.MapViewClickEventHandler = async (
     event: esri.MapViewClickEvent
   ) => {
-    let hit = await this.hitTester(event, this._casesfeatlayer);
+    let hit = await this.hitTester(event, this._MSOAcasesFeatLayer);
     if (this._selectedMSOA != hit.graphic) {
       this._view.graphics.removeAll();
       this._view.graphics.add(hit.graphic);
       this._selectedMSOA = hit.graphic;
-      // await this.createRenderer(this._casesfeatlayer, this._selectedMSOA.getAttribute("msoa11_hclnm"), 25, "test");
+      // await this.createRenderer(this._MSOAcasesFeatLayer, this._selectedMSOA.getAttribute("msoa11_hclnm"), 25, "test");
     }
     return;
   };
@@ -373,8 +404,10 @@ export class CasesMapComponent implements OnInit, OnDestroy {
   hoverHandler: esri.MapViewPointerMoveEventHandler = async (
     event: esri.MapViewPointerMoveEvent
   ) => {
-    let hit = await this.hitTester(event, this._casesfeatlayer);
+    //Test for hit result on MSOAcasesFeatureLayer
+    let hit = await this.hitTester(event, this._MSOAcasesFeatLayer);
 
+    //If no result hide the tooltip and remove highlights.
     if (!hit) {
       if (this._currentlyHighlighted) {
         this._currentlyHighlighted.handle.remove();
@@ -385,11 +418,14 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       return;
     }
 
+
+    //MSOAcasesFeatLayer has been hit
+    //extract attribute information and show tooltip
     let MSOAName: string = hit.graphic.getAttribute(
-      this.mapService.dataServiceFields.MSOAname
+      this.appStateService.dataServiceFields.MSOAname
     );
     let numcases: number = hit.graphic.getAttribute(
-      this.mapService.dataServiceFields.CovidCases
+      this.appStateService.dataServiceFields.CovidCases
     );
     let casestring: string = numcases ? ` Cases: ${numcases}` : "";
 
@@ -397,8 +433,11 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       screenPoint: hit.screenPoint,
       text: MSOAName + casestring,
     });
-    // this._tooltip.show(hit.screenPoint, countryName);
 
+
+    // Control Highlight behaviour.
+    // If somewhere is already highlighted and the hittested graphic is a different
+    // object id then clear existing highlight graphic.
     if (
       this._currentlyHighlighted &&
       this._currentlyHighlighted.highlightGraphic.attributes.OBJECTID !==
@@ -408,17 +447,21 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       this._currentlyHighlighted = null;
     }
 
+    // If the somewhere is still highlighted then persist the current highlighted feature
     if (this._currentlyHighlighted) {
       return;
     }
 
+    // Otherwise time to highlight a new feature on the map.
     this._currentlyHighlighted = {
       highlightGraphic: hit.graphic,
       handle: this._caseslayerview.highlight(hit.graphic),
     };
   };
 
-  async generateRenderer() {
+  // Generate dynamicaly the colour renderer using the statistics of the cases field in the
+  // MSOA Cases Layer.
+  async generateMSOACasesRenderer() {
     // configure parameters for the color renderer generator
     // the layer must be specified along with a field name.
 
@@ -427,12 +470,12 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       geometryType: "polygon",
       theme: "high-to-low",
     });
-    console.log(colorScheme);
+
     colorScheme.noDataColor = new Color("rgba(255, 247, 236, 0.5)");
 
     const colorParams: esri.colorCreateContinuousRendererParams = {
-      layer: this._casesfeatlayer,
-      field: this.mapService.dataServiceFields.CovidCases,
+      layer: this._MSOAcasesFeatLayer,
+      field: this.appStateService.dataServiceFields.CovidCases,
       view: this._view,
       theme: "high-to-low",
       colorScheme: colorScheme,
@@ -442,9 +485,13 @@ export class CasesMapComponent implements OnInit, OnDestroy {
 
     const rendererResult = await createContinuousRenderer(colorParams);
 
-    this._casesfeatlayer.renderer = rendererResult.renderer;
+    return rendererResult.renderer
   }
 
+  /**Pan the map view to specific coordinates.
+   *
+   * @param coordinates - target coordinates or geometry
+   */
   panMap(coordinates) {
     this._view.goTo(
       { target: coordinates, zoom: 10 },
@@ -452,6 +499,11 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     );
   }
 
+
+  /**Creates a custom CIM symbol labelled by the input value string.
+   *
+   * @param value : string.
+   */
   getCIMPointSymbolData(value) {
     return {
       type: "CIMPointSymbol",
