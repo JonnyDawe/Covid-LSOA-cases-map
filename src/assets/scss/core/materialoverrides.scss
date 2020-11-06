@@ -1,0 +1,8 @@
+//overide the slige toggle to be able to wrap the label-text
+mat-slide-toggle.wrap-toggle-text {
+  label {
+    span.mat-slide-toggle-content {
+      white-space: normal !important;
+    }
+  }
+}
