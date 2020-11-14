@@ -207,6 +207,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     this.coviddateSubscription = this.appStateService.dateset$.subscribe(async (setdate) => {
       await this._view.whenLayerView(this._MSOAcasesFeatLayer)
 
+
       let updatedRenderer = this._continuousColorCasesRenderer.clone()
       updatedRenderer.field = this.appStateService.dataServiceFields.CovidCases
 
@@ -216,6 +217,8 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       })
 
       this._MSOAcasesFeatLayer.renderer = updatedRenderer
+      this.setLabelConfig(this._MSOAcasesFeatLayer)
+
 
       //Hide tooltip because data has changed underneath it.
       this.hideTooltip.emit()
@@ -265,26 +268,9 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       // definitionExpression: `date = '${this.appStateService.currentDateSelected}'`
     }
 
-    if (this._isMobile) {
-      // configure label properties
-      const casesLabelClass = new LabelClass({
-        labelExpressionInfo: {
-          expression: `$feature.${this.appStateService.dataServiceFields.CovidCases}`,
-        },
-        minScale: 1000000,
-        symbol: {
-          type: "text", // autocasts as new TextSymbol()
-          color: "black",
-          haloSize: 1,
-          haloColor: "white",
-        } as esri.SymbolProperties,
-      });
-
-      mapcaseslayerproperties.labelingInfo = casesLabelClass;
-    }
-
 
     this._MSOAcasesFeatLayer = new FeatureLayer(mapcaseslayerproperties);
+    this.setLabelConfig(this._MSOAcasesFeatLayer)
     const casesColorRenderer = await this.generateMSOACasesRenderer();
     this._MSOAcasesFeatLayer.renderer = casesColorRenderer
   }
@@ -346,6 +332,30 @@ export class CasesMapComponent implements OnInit, OnDestroy {
 
   }
 
+  /**Set the feature layer label settings if in mobile mode. */
+  setLabelConfig(layer: esri.FeatureLayer) {
+    if (this._isMobile) {
+      // configure label properties
+      const casesLabelClass = [new LabelClass({
+        labelExpressionInfo: {
+          expression: `$feature.${this.appStateService.dataServiceFields.CovidCases}`,
+        },
+        minScale: 1000000,
+        symbol: {
+          type: "text", // autocasts as new TextSymbol()
+          color: "black",
+          haloSize: 1,
+          haloColor: "white",
+        } as esri.SymbolProperties,
+      })];
+
+      layer.labelingInfo = casesLabelClass;
+    }
+    else {
+      return
+    }
+  }
+
   /********Initialise Widgets *********/
   initialiseSearchWidget() {
 
@@ -390,6 +400,9 @@ export class CasesMapComponent implements OnInit, OnDestroy {
 
     return searchWidget
   }
+
+
+
 
   /********Utility Functions for Map Interaction. *********/
 
