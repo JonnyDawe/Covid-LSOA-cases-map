@@ -36,6 +36,7 @@
             [tickInterval]="1"
             [(ngModel)]="sliderValue"
             [disabled]="!mapLoaded"
+            (input)="onInputChange($event)"
           ></mat-slider>
         </div>
       </div>
@@ -99,6 +100,7 @@
             [tickInterval]="1"
             [(ngModel)]="sliderValue"
             [disabled]="!mapLoaded"
+            (input)="onInputChange($event)"
           ></mat-slider>
         </div>
       </div>
