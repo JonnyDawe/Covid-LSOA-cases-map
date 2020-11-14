@@ -14,6 +14,15 @@ export class NationalCasesGraphComponent implements OnInit {
 
   public barChartOptions: ChartOptions = {
     responsive: true,
+    title: {
+      display: true,
+      text: "New Covid Cases by Publish Date in England",
+      fontSize: 18,
+      fontFamily: "'Lato', sans-serif",
+    },
+    legend: {
+      display: false
+    },
     // We use these empty structures as placeholders for dynamic theming.
     scales: { xAxes: [{ type: "time", time: { unit: "month", parser: "YYYY-MM-DD" }, distribution: 'linear' }], yAxes: [{}] },
     plugins: {
@@ -33,10 +42,7 @@ export class NationalCasesGraphComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    this.testapipull().then((result) => {
-      console.log("result", result)
-
-
+    this.covidPHEapipull().then((result) => {
       this.barChartData = [{
         data: result.data.map((element) => {
           return {
@@ -60,20 +66,8 @@ export class NationalCasesGraphComponent implements OnInit {
     console.log(event, active);
   }
 
-  public randomize(): void {
-    // Only Change 3 values
-    this.barChartData[0].data = [
-      Math.round(Math.random() * 100),
-      59,
-      80,
-      (Math.random() * 100),
-      56,
-      (Math.random() * 100),
-      40];
-  }
 
-
-  async testapipull() {
+  async covidPHEapipull() {
     let areaName = "england"
     let areaType = "nation"
     let resultStructure = '{"date":"date","newCases":"newCasesByPublishDate"}'
@@ -83,10 +77,9 @@ export class NationalCasesGraphComponent implements OnInit {
         `https://api.coronavirus.data.gov.uk/v1/data?filters=areaType=${areaType};areaName=${areaName}&structure=${resultStructure}`
       );
       let parsedResponse = await response.json();
-      console.log(parsedResponse)
       return parsedResponse
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   }
 
