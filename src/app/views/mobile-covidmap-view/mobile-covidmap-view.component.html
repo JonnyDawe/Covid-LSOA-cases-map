@@ -4,20 +4,25 @@
       <mat-slide-toggle
         class="pr-2 pl-3 wrap-toggle-text"
         [disabled]="false"
-        [(ngModel)]="appStateService.showRestrictionAreas"
-        >Show Areas With Local Restrictions</mat-slide-toggle
+        [(ngModel)]="appStateService.showMobileMapTimeSlider"
+        >Show Historical Data</mat-slide-toggle
       >
     </div>
   </mat-sidenav>
 
   <mat-sidenav-content class="overflow-hidden">
     <div
-      [ngClass]="{ 'h-50': !mapOnly, 'h-100': mapOnly }"
+      [ngClass]="{
+        'h-50': !mapOnly && !showTimeSlider,
+        'h-100': mapOnly && !showTimeSlider,
+        'h-75': showTimeSlider
+      }"
       class="mobile-map-container animate-width"
     >
       <app-map appMapTooltip class="d-block h-100 map-focus"></app-map>
       <app-loader class="h-100" [id]="'map'"></app-loader>
       <button
+        *ngIf="!showTimeSlider"
         class="table-toggle btn btn-primary mat-elevation-z2 p-0"
         (click)="toggleTableDraw()"
       >
@@ -47,6 +52,7 @@
         </svg>
       </button>
     </div>
-    <app-cases-table *ngIf="!mapOnly"></app-cases-table>
+    <app-cases-table *ngIf="!mapOnly && !showTimeSlider"></app-cases-table>
+    <app-timeslider class="h-25" *ngIf="showTimeSlider"></app-timeslider>
   </mat-sidenav-content>
 </mat-sidenav-container>

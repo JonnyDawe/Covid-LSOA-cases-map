@@ -16,6 +16,8 @@ import Graphic from "@arcgis/core/Graphic";
 import Search from "@arcgis/core/widgets/Search";
 import Locate from "@arcgis/core/widgets/Locate";
 import Locator from "@arcgis/core/tasks/Locator";
+import Legend from "@arcgis/core/widgets/Legend";
+import Expand from "@arcgis/core/widgets/Expand"
 import LabelClass from "@arcgis/core/layers/support/LabelClass";
 import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol";
 import { ToolTipInfo } from "../../../models/custom-types";
@@ -26,12 +28,17 @@ import { Subscription } from "rxjs";
 import { AppStateService } from "../../../shared/app-state.service";
 import { Extent } from "@arcgis/core/geometry";
 
+
 /**
  * To do:
  * ideas...
  * - click to produce good looking pop-up based on attribute data and customise the styling.
  * - filter based on extent using a radio button.
  * - integrate with an external api using the PHE api.
+ *
+ *
+ * - new rendering pathway... (switch fields to display instead of geometry refresh...)
+ * - take csv... then change so that each week has its data counts...
  */
 @Component({
   selector: "app-map",
@@ -50,6 +57,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
   /**Subscriptions */
   panRequestSubscription: Subscription;
   restrictionsLayerShowSubscription: Subscription;
+  coviddateSubscription: Subscription;
 
   //Property Watchers
   currentMapExtentHandle: esri.WatchHandle;
@@ -67,6 +75,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     highlightGraphic: esri.Graphic;
     handle: esri.Handle;
   };
+  private _continuousColorCasesRenderer: esri.renderersClassBreaksRenderer
 
   //Inject appStateService
   constructor(public appStateService: AppStateService) { }
@@ -104,6 +113,12 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     this._view = new MapView(mapViewProperties);
     const searchWidget = this.initialiseSearchWidget()
     const locateBtn = new Locate({ view: this._view });
+    const legendExpand = new Expand({
+      view: this._view,
+      content: new Legend({
+        view: this._view
+      })
+    })
 
     // wait for the map to load and then add ui widgets
     await this._view.when();
@@ -113,6 +128,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     this._view.ui.add(locateBtn, {
       position: "top-left",
     });
+    this._view.ui.add(legendExpand, { position: "top-left" })
 
     //wait for all feature layer promises to resolve.
     await Promise.all([casesLayerPromise])
@@ -187,6 +203,27 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       }
     );
 
+
+    this.coviddateSubscription = this.appStateService.dateset$.subscribe(async (setdate) => {
+      await this._view.whenLayerView(this._MSOAcasesFeatLayer)
+
+      let updatedRenderer = this._continuousColorCasesRenderer.clone()
+      updatedRenderer.field = this.appStateService.dataServiceFields.CovidCases
+
+      updatedRenderer.visualVariables = updatedRenderer.visualVariables.map((element) => {
+        element.field = this.appStateService.dataServiceFields.CovidCases
+        return element
+      })
+
+      this._MSOAcasesFeatLayer.renderer = updatedRenderer
+
+      //Hide tooltip because data has changed underneath it.
+      this.hideTooltip.emit()
+
+    })
+
+
+
     //subscribe to restrictions layer visibility state.
     this.restrictionsLayerShowSubscription = this.appStateService.showRestrictionAreas$.subscribe(
       async (show) => {
@@ -225,7 +262,8 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       outFields: ["*"],
       opacity: 0.7,
       title: "Covid_Layer",
-    };
+      // definitionExpression: `date = '${this.appStateService.currentDateSelected}'`
+    }
 
     if (this._isMobile) {
       // configure label properties
@@ -484,6 +522,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     };
 
     const rendererResult = await createContinuousRenderer(colorParams);
+    this._continuousColorCasesRenderer = rendererResult.renderer
 
     return rendererResult.renderer
   }

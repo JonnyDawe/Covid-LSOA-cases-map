@@ -1,5 +1,5 @@
 .map-card-height {
-  height: calc(100% - 65.5px);
+  height: calc(100% - 83.5px);
 }
 
 .table-card-height {
@@ -19,18 +19,10 @@
 
 .map-toggle-menu {
   // padding-top: calc(65.5px - 1.25em - 28.5px);
-  height: 45px;
+  height: 63px;
   padding-bottom: 15px;
   font-weight: 200;
   font-family: "Lato", sans-serif !important;
-
-  .mat-slide-toggle {
-    background-color: white;
-  }
-
-  .mat-slide-toggle-content {
-    color: black;
-  }
 }
 
 .maptogglefullwidth {

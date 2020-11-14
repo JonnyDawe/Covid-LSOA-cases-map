@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Subject } from "rxjs";
 import MSOA_lookup from "./MSOA_Lookup.json";
+import covidCasesDateRange from "./covidCasesDates.json"
 import LA_LockdownAreas from "./LockdownAreas.json";
 import { CovidTableDataElement, DeviceInfo } from "../models/custom-types";
 import { DeviceDetectorService } from "ngx-device-detector";
@@ -31,15 +32,22 @@ export class AppStateService {
       }
     `
 
+    this.covidCasesDateBins = covidCasesDateRange.covidCasesDates.sort(function (a, b) {
+      //sort dates in ascending order
+      return new Date(a).getTime() - new Date(b).getTime();
+    })
+
+    //Initialise the map to use the most recent date bin.
+    this.currentDateSelected = this.covidCasesDateBins[this.covidCasesDateBins.length - 1]
+
     this.detectDevice();
-    console.log(this.deviceInfo)
   }
 
   /** --------------------Map State-------------------- **/
 
   //Map centre and Zoom Level
   mapCentre: Array<number> = [-1.3, 52.98];
-  mapZoomLevel: number = 5;
+  mapZoomLevel: number = 6;
   //default basemaps here: https://developers.arcgis.com/javascript/latest/api-reference/esri-Map.html#basemap
   mapBasemap: string = "gray-vector";
 
@@ -99,6 +107,14 @@ export class AppStateService {
 
   /** --------------------Table State-------------------- **/
 
+  _casesQueryResult: esri.Graphic[]
+  set casesQueryResult(value: esri.Graphic[]) {
+    this._casesQueryResult = value
+  }
+  get casesQueryResult() {
+    return this._casesQueryResult
+  }
+
   //store the data displayed on the table
   _tableData: CovidTableDataElement[];
   set tableData(value: CovidTableDataElement[]) {
@@ -122,16 +138,54 @@ export class AppStateService {
     return this._tableLoaded;
   }
 
+  /** --------------------Time Slider State-------------------- **/
+
+  // Date Range used by timeslider:
+  // it is hardcoded here but it could be queried in the feature service using the return distinct values query.
+  // in theory the dates might need to be sorted...
+  covidCasesDateBins: string[]
+
+  // store the current date selected  - populate on start up with latest date range
+  // update the covid cases for a date field.
+  _currentDateSelected: string
+  set currentDateSelected(value) {
+    this._currentDateSelected = value
+    this.dataServiceFields.CovidCases = this.convertDateStringToField(value)
+    this.dateset$.next(this._currentDateSelected)
+  }
+
+  get currentDateSelected() {
+    return this._currentDateSelected
+  }
+
+  //need to fire off event when this changes so that feature layer updates can kick in.
+  dateset$ = new Subject<string>();
+
+  //record whether the timeslider should be displayed
+  displayMobileMapTimeSlider$ = new Subject<boolean>();
+  _showMobileMapTimeSlider: boolean = false
+
+  //set mapLoaded state and push event to all subscribers.
+  set showMobileMapTimeSlider(state: boolean) {
+    this._showMobileMapTimeSlider = state;
+    this.displayMobileMapTimeSlider$.next(this._showMobileMapTimeSlider);
+  }
+  get showMobileMapTimeSlider() {
+    return this._showMobileMapTimeSlider;
+  }
+
   /** --------------------External Data Services-------------------- **/
   dataServiceUrl: string =
-    "https://services6.arcgis.com/ujpPLfH38KAX8unh/arcgis/rest/services/MSOA_England_COVID_Cases_23_10_2020/FeatureServer";
+    "https://services6.arcgis.com/ujpPLfH38KAX8unh/arcgis/rest/services/MSOA_England_COVID_Cases_7_11_2020_rolling/FeatureServer";
 
   dataServiceFields = {
     MSOAname: "msoa11_hclnm",
     MSOACode: "msoa11cd",
-    CovidCases: "latest_7_days",
+    CovidCases: "Date_2020_10_30",
   };
 
+
+  // Made Obsolete with changes to restrictions across the UK
   dataRestrictionsServiceUrl: string =
     "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/LAD_2013_GB_BSC/FeatureServer";
 
@@ -142,8 +196,10 @@ export class AppStateService {
   tier3restrictedLAs: string[]
   RestrictionsArcade: string
 
-  //MSOA Lookup
-  MSOA_Lookup;
+  /**
+   * MSOA Lookup - this allows the local authority etc. to be querires from the MSOA code.
+   */
+  MSOA_Lookup: Map<string, any>;
 
   initaliseMSOAMap() {
     let lookup = new Map<string, any>();
@@ -171,5 +227,10 @@ export class AppStateService {
       isTablet: this.deviceService.isTablet(),
       DeviceInfo: this.deviceService.getDeviceInfo(),
     };
+  }
+
+
+  convertDateStringToField(datestring: string): string {
+    return `Date_${datestring.replace(/\//g, "_")}`
   }
 }

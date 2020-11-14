@@ -28,11 +28,16 @@ import { AppStateService } from '../../../shared/app-state.service';
 export class CasesTableComponent
   implements OnInit, OnDestroy, AfterViewInit {
 
+  //Current Time interval selected Subscription
+  timeUpdatedSubscription: Subscription;
+
   // Map Extent Subscription - for querying features in view.
   mapExtentSubscription: Subscription;
 
   // Loading state subscription
   tableLoadedSubscription: Subscription;
+
+
 
   // Query Results
   private _queryResults: esri.FeatureSet;
@@ -85,6 +90,7 @@ export class CasesTableComponent
         console.warn("Query to populate table exceeded transfer limit");
       }
 
+      this.appStateService.casesQueryResult = this._queryResults.features
       this._allData = this._queryResults.features.map((feature) => {
         const MSOACode =
           feature.attributes[this.appStateService.dataServiceFields.MSOACode];
@@ -143,6 +149,40 @@ export class CasesTableComponent
       this.appStateService.tableLoaded = true;
     });
 
+
+    this.timeUpdatedSubscription = this.appStateService.dateset$.subscribe((dateset) => {
+      if (this.appStateService.casesQueryResult) {
+        this._allData = this.appStateService.casesQueryResult.map((feature) => {
+          const MSOACode =
+            feature.attributes[this.appStateService.dataServiceFields.MSOACode];
+
+
+          return {
+            MSOAName:
+              feature.attributes[this.appStateService.dataServiceFields.MSOAname],
+            MSOALocalAuthority: this.appStateService.MSOA_Lookup.get(MSOACode).LAD20NM,
+            cases: feature.attributes[
+              this.appStateService.dataServiceFields.CovidCases
+            ]
+              ? feature.attributes[this.appStateService.dataServiceFields.CovidCases]
+              : 0,
+            MSOACode: MSOACode,
+            MSOAGeometry: feature.geometry,
+          };
+        });
+
+        let extent = this.appStateService.mapCurrentExtent ? this.appStateService.mapCurrentExtent : this.appStateService._mapStartingExtent
+        this._dataSource.data = this._allData.filter((element) => {
+          return geometryEngine.intersects(
+            element.MSOAGeometry,
+            extent
+          );
+        });
+      }
+    }
+
+    )
+
     this.mapExtentSubscription = this.appStateService.mapCurrentExtent$.subscribe(
       (extent) => {
         if (this._allData) {
@@ -183,6 +223,7 @@ export class CasesTableComponent
   ngOnDestroy(): void {
     this.mapExtentSubscription.unsubscribe();
     this.tableLoadedSubscription.unsubscribe();
+    this.timeUpdatedSubscription.unsubscribe()
     this.appStateService.tableLoaded = false;
   }
 

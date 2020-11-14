@@ -3,13 +3,17 @@
     [ngClass]="{ 'col-7': !mapOnly, 'col-12': mapOnly }"
     class="h-100 animate-width"
   >
-    <div class="map-toggle-menu">
+    <!-- <div class="map-toggle-menu">
       <mat-slide-toggle
         class="pl-2 mat-elevation-z3 map-toggle"
         [disabled]="mapLoadingState"
         [(ngModel)]="mapService.showRestrictionAreas"
-        >Show Areas With Local Restrictions</mat-slide-toggle
+        >Show Historical Data</mat-slide-toggle
       >
+    </div> -->
+
+    <div class="map-toggle-menu">
+      <app-timeslider></app-timeslider>
     </div>
 
     <div class="map-card-height card-item position-relative mat-elevation-z3">
