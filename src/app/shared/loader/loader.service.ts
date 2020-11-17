@@ -39,9 +39,9 @@ export class LoaderService {
     });
   }
 
-  /** Toggle Display loader - send if to loader service to display or hide the spinner.
+  /** Toggle Display loader - send to loader service to display or hide the spinner.
    *  @param id - the registered loader id.
-   *  @param loadedStatus - maploading state.
+   *  @param loadedStatus - current loaded state.
    */
   toggleDisplayLoader(id: string, loadedStatus: boolean) {
     console.log("id sent to loader:", id);

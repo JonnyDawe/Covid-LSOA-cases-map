@@ -35,9 +35,7 @@ export class TimesliderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.detectChanges()
   }
 
-  //TO DO:
-  //On press play - initiate the iterating through values on the time slider.
-  //remember to loop back around....
+
   mapLoadedSubscription: Subscription
   mapLoaded: boolean = false
 

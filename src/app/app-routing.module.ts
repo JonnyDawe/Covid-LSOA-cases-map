@@ -6,7 +6,9 @@ import { MobileCovidmapViewComponent } from './views/mobile-covidmap-view/mobile
 import { AppStateService } from './shared/app-state.service';
 
 
-
+/** Provide Routes for desktop and mobile device
+ * https://medium.com/better-programming/creating-angular-webapp-for-multiple-views-and-screen-sizes-50fe8a83c433
+*/
 export const desktopRoutes: Routes = [
   { path: "", redirectTo: "/map", pathMatch: "full" },
   {

@@ -37,6 +37,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { ChartsModule } from 'ng2-charts';
 import { NationalCasesGraphComponent } from './views/stats-view/national-cases-graph/national-cases-graph.component';
 import { TimesliderComponent } from './views/covidmap-view/timeslider/timeslider.component';
+
 @NgModule({
   declarations: [
     AppComponent,

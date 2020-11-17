@@ -8,30 +8,16 @@ import { DeviceDetectorService } from "ngx-device-detector";
 import esri = __esri;
 import Extent from "@arcgis/core/geometry/Extent";
 
-/**Service for storing Application State**/
+/**Application State Service stores application properties**/
 @Injectable({
   providedIn: "root",
 })
 export class AppStateService {
   constructor(private deviceService: DeviceDetectorService) {
+    //Initialise a lookup for MSOA region information.
     this.MSOA_Lookup = this.initaliseMSOAMap();
 
-    this.tier2restrictedLAs = LA_LockdownAreas.tier2Areas
-    this.tier3restrictedLAs = LA_LockdownAreas.tier3Areas
-
-    this.RestrictionsArcade = `var featureLA_code = $feature.LAD13CD;
-    var tier_veryhigh = [${this.tier3restrictedLAs}];
-    var tier_high = [${this.tier2restrictedLAs}];
-
-    if (IndexOf(tier_veryhigh, featureLA_code) != -1) {
-      return "tier3";
-      } else if (IndexOf(tier_high, featureLA_code) != -1) {
-      return "tier2";
-      } else {
-      return "tier1";
-      }
-    `
-
+    //Generate date bins to use for time slider.
     this.covidCasesDateBins = covidCasesDateRange.covidCasesDates.sort(function (a, b) {
       //sort dates in ascending order
       return new Date(a).getTime() - new Date(b).getTime();
@@ -40,6 +26,7 @@ export class AppStateService {
     //Initialise the map to use the most recent date bin.
     this.currentDateSelected = this.covidCasesDateBins[this.covidCasesDateBins.length - 1]
 
+    //Detect device used by user.
     this.detectDevice();
   }
 
@@ -64,6 +51,7 @@ export class AppStateService {
     ymax: 7872083.808575593,
   });
 
+  /**current Esri Map Extent */
   _mapCurrentExtent: esri.Extent;
 
   set mapCurrentExtent(extent: esri.Extent) {
@@ -96,17 +84,9 @@ export class AppStateService {
     return this._mapLoaded;
   }
 
-  //set mapLoaded state and push event to all subscribers.
-  set showRestrictionAreas(state: boolean) {
-    this._showRestrictionAreas = state;
-    this.showRestrictionAreas$.next(this._showRestrictionAreas);
-  }
-  get showRestrictionAreas() {
-    return this._showRestrictionAreas;
-  }
-
   /** --------------------Table State-------------------- **/
 
+  //Store Query to MSOA Feature Service.
   _casesQueryResult: esri.Graphic[]
   set casesQueryResult(value: esri.Graphic[]) {
     this._casesQueryResult = value
@@ -129,7 +109,7 @@ export class AppStateService {
   tableLoaded$ = new Subject<boolean>();
   _tableLoaded: boolean = false;
 
-  //set mapLoaded state and push event to all subscribers.
+  //set tableloaded state and push event to all subscribers.
   set tableLoaded(state: boolean) {
     this._tableLoaded = state;
     this.tableLoaded$.next(this._tableLoaded);
@@ -140,9 +120,7 @@ export class AppStateService {
 
   /** --------------------Time Slider State-------------------- **/
 
-  // Date Range used by timeslider:
-  // it is hardcoded here but it could be queried in the feature service using the return distinct values query.
-  // in theory the dates might need to be sorted...
+  // Date Ranges used by timeslider:
   covidCasesDateBins: string[]
 
   // store the current date selected  - populate on start up with latest date range
@@ -165,7 +143,6 @@ export class AppStateService {
   displayMobileMapTimeSlider$ = new Subject<boolean>();
   _showMobileMapTimeSlider: boolean = false
 
-  //set mapLoaded state and push event to all subscribers.
   set showMobileMapTimeSlider(state: boolean) {
     this._showMobileMapTimeSlider = state;
     this.displayMobileMapTimeSlider$.next(this._showMobileMapTimeSlider);
@@ -183,18 +160,6 @@ export class AppStateService {
     MSOACode: "msoa11cd",
     CovidCases: "Date_2020_10_30",
   };
-
-
-  // Made Obsolete with changes to restrictions across the UK
-  dataRestrictionsServiceUrl: string =
-    "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/LAD_2013_GB_BSC/FeatureServer";
-
-  showRestrictionAreas$ = new Subject<boolean>();
-  _showRestrictionAreas: boolean = false;
-
-  tier2restrictedLAs: string[]
-  tier3restrictedLAs: string[]
-  RestrictionsArcade: string
 
   /**
    * MSOA Lookup - this allows the local authority etc. to be querires from the MSOA code.
@@ -229,7 +194,8 @@ export class AppStateService {
     };
   }
 
-
+  // Date fields in MSOA Feature Service have the following format: Date_3_4_2020
+  // This is a hardcoded utility function...
   convertDateStringToField(datestring: string): string {
     return `Date_${datestring.replace(/\//g, "_")}`
   }

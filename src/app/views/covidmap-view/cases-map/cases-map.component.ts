@@ -17,7 +17,8 @@ import Search from "@arcgis/core/widgets/Search";
 import Locate from "@arcgis/core/widgets/Locate";
 import Locator from "@arcgis/core/tasks/Locator";
 import Legend from "@arcgis/core/widgets/Legend";
-import Expand from "@arcgis/core/widgets/Expand"
+import Expand from "@arcgis/core/widgets/Expand";
+import * as watchUtils from "@arcgis/core/core/watchUtils"
 import LabelClass from "@arcgis/core/layers/support/LabelClass";
 import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol";
 import { ToolTipInfo } from "../../../models/custom-types";
@@ -56,7 +57,6 @@ export class CasesMapComponent implements OnInit, OnDestroy {
 
   /**Subscriptions */
   panRequestSubscription: Subscription;
-  restrictionsLayerShowSubscription: Subscription;
   coviddateSubscription: Subscription;
 
   //Property Watchers
@@ -67,9 +67,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
   private _view: MapView = null;
   private _MSOAcasesFeatLayer: FeatureLayer = null;
   private _caseslayerview: esri.FeatureLayerView = null;
-  private _restrictionsfeatlayer: FeatureLayer = null;
-  private _restrictionslayerview: esri.FeatureLayerView = null;
-  private _isMobile
+  private _isMobile;
   private _selectedMSOA: esri.Graphic = null;
   private _currentlyHighlighted: {
     highlightGraphic: esri.Graphic;
@@ -82,13 +80,6 @@ export class CasesMapComponent implements OnInit, OnDestroy {
 
   //Initialise Esri Map
   async initializeMap() {
-
-    // initialise the MSOACases Layer - aync due to generating of renderer.
-    const casesLayerPromise = this.initialiseMSOACasesLayer()
-
-    // initialise the restriction area layer
-    this.initialiseRestrictionAreaLayer()
-
 
     // Define Map properties
     const mapProperties = {
@@ -130,22 +121,24 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     });
     this._view.ui.add(legendExpand, { position: "top-left" })
 
-    //wait for all feature layer promises to resolve.
-    await Promise.all([casesLayerPromise])
+    // initialise the MSOACases Layer - aync due to generating of renderer.
+    this.initialiseMSOACasesLayer()
 
     //Add MSOA Cases feature layer.
     this._map.add(this._MSOAcasesFeatLayer);
+
     this._caseslayerview = await this._view.whenLayerView(this._MSOAcasesFeatLayer);
 
-    if (this.appStateService.showRestrictionAreas) {
-      this._map.add(this._restrictionsfeatlayer);
-      this._restrictionslayerview = await this._view.whenLayerView(
-        this._restrictionsfeatlayer
-      );
-    }
+    //create caseColorRenderer
+    const casesColorRenderer = await this.generateMSOACasesRenderer();
+    this._MSOAcasesFeatLayer.renderer = casesColorRenderer
+    watchUtils.whenFalseOnce(this._caseslayerview, "updating", () => {
+      //Hack to work around strange node modules bug... Set the layer to visible once the renderer has been
+      //generated.
+      this._MSOAcasesFeatLayer.opacity = 0.7
+    })
 
-
-    // CIM Symbol Experiment.
+    // CIM Symbol Experiment - Ignore unless interested
     // let graphicsToDisplay = this.appStateService._tableData.map((element) => {
 
     //   let cimmarkerSymbol = {
@@ -224,22 +217,6 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       this.hideTooltip.emit()
 
     })
-
-
-
-    //subscribe to restrictions layer visibility state.
-    this.restrictionsLayerShowSubscription = this.appStateService.showRestrictionAreas$.subscribe(
-      async (show) => {
-        if (show) {
-          await this._map.add(this._restrictionsfeatlayer);
-          this._restrictionslayerview = await this._view.whenLayerView(
-            this._restrictionsfeatlayer
-          );
-        } else {
-          await this._map.remove(this._restrictionsfeatlayer);
-        }
-      }
-    );
   }
 
   ngOnDestroy() {
@@ -263,74 +240,16 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     let mapcaseslayerproperties: any = {
       url: this.appStateService.dataServiceUrl,
       outFields: ["*"],
-      opacity: 0.7,
+      opacity: 0, //hack 0 opacity for node modules color renderer bug
       title: "Covid_Layer",
-      // definitionExpression: `date = '${this.appStateService.currentDateSelected}'`
     }
 
 
     this._MSOAcasesFeatLayer = new FeatureLayer(mapcaseslayerproperties);
     this.setLabelConfig(this._MSOAcasesFeatLayer)
-    const casesColorRenderer = await this.generateMSOACasesRenderer();
-    this._MSOAcasesFeatLayer.renderer = casesColorRenderer
-  }
-
-  initialiseRestrictionAreaLayer() {
-    let restrictionsrenderer = {
-      type: "unique-value",  // autocasts as new UniqueValueRenderer()
-      valueExpression: this.appStateService.RestrictionsArcade,
-      defaultSymbol: { type: "simple-fill" },
-      uniqueValueInfos: [{
-        // All features with value of "tier3" will be blue
-        value: "tier3",
-        symbol: {
-          type: "simple-fill", // autocasts as new SimpleFillSymbol()
-          color: [92, 0, 210, 0.5],
-          outline: {
-            // autocasts as new SimpleLineSymbol()
-            color: [0, 0, 0, 0.5],
-            width: "0.5px",
-          },
-        }
-      }, {
-        // All features with value of "East" will be green
-        value: "tier2",
-        symbol: {
-          type: "simple-fill", // autocasts as new SimpleFillSymbol()
-          color: [92, 0, 210, 0.2],
-          outline: {
-            // autocasts as new SimpleLineSymbol()
-            color: [0, 0, 0, 0.5],
-            width: "0.5px",
-          },
-        }
-      }, {
-        // All features with value of "South" will be red
-        value: "tier1",
-        symbol: {
-          type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-          color: [0, 0, 0, 0],
-          outline: {
-            // autocasts as new SimpleLineSymbol()
-            color: [0, 0, 0, 0],
-            width: "0.5px",
-          },
-        }
-      }]
-    };
-
-
-    const maprestrictionslayerproperties: any = {
-      url: this.appStateService.dataRestrictionsServiceUrl,
-      opacity: 1,
-      renderer: restrictionsrenderer
-    };
-
-    this._restrictionsfeatlayer = new FeatureLayer(
-      maprestrictionslayerproperties
-    );
 
   }
+
 
   /**Set the feature layer label settings if in mobile mode. */
   setLabelConfig(layer: esri.FeatureLayer) {

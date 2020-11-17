@@ -1,7 +1,13 @@
 import { Directive, ElementRef, Renderer2, HostListener } from "@angular/core";
 import { ToolTipInfo } from "../models/custom-types";
 
-/**Directive to create a tooltip on the map. */
+/**Directive to create a tooltip on the map.
+ *
+ * Add this directive to the map container used by the mapView.
+ *
+ * Hookup custom event emitters on the map component to fire showTooltip and
+ * hide tooltip as required.
+ */
 @Directive({
   selector: "[appMapTooltip]",
 })
