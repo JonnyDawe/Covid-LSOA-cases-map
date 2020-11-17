@@ -13,9 +13,11 @@ import { Subscription } from 'rxjs';
 export class MobileCovidmapViewComponent implements OnInit, AfterViewInit {
 
   // Subscriptions and State
+  timesliderSubscription: Subscription;
   mapLoadedSubscription: Subscription;
   mapLoadingState: boolean = true;
   public mapOnly: boolean = true;
+  public showTimeSlider: boolean = false;
 
   // access material sidenav element in HTML template.
   @ViewChild('sidenav') public sidenav: MatSidenav;
@@ -28,6 +30,10 @@ export class MobileCovidmapViewComponent implements OnInit, AfterViewInit {
     // Register Loader and listen for updates to loading state.
     this.loaderService.register({ id: "map", show: false });
     this.loaderService.toggleDisplayLoader("map", this.appStateService.mapLoaded);
+
+    this.timesliderSubscription = this.appStateService.displayMobileMapTimeSlider$.subscribe((showtimeslider) => {
+      this.showTimeSlider = showtimeslider
+    })
 
     this.mapLoadedSubscription = this.appStateService.mapLoaded$.subscribe(
       (mapLoaded) => {

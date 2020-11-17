@@ -1,0 +1,20 @@
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overflow: hidden;
+  font-family: "Lato", sans-serif;
+  background-color: #e6a9ff1f;
+}
+
+.card-item {
+  background-color: white;
+  border-radius: 0.25rem;
+  padding: 16px;
+}
+
+.animate-width {
+  -webkit-transition: all 400ms ease;
+  -moz-transition: all 400ms ease;
+  -o-transition: all 400ms ease;
+  transition: all 400ms ease;
+}

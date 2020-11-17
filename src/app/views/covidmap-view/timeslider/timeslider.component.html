@@ -1,0 +1,109 @@
+<div *ngIf="!_ismobile" class="timeslider-container mat-elevation-z3">
+  <div class="d-flex">
+    <div class="flex-grow-1">
+      <div class="d-flex">
+        <div class="timeslider-control-button pr-0">
+          <div class="d-flex h-100 justify-content-center pl-2">
+            <button
+              *ngIf="playTimeSlider === false"
+              mat-icon-button
+              class="my-auto"
+              onclick="this.blur()"
+              aria-label="icon-button"
+              (click)="togglePlayTimeSlider()"
+              [disabled]="!mapLoaded"
+            >
+              <mat-icon>play_circle_outline</mat-icon>
+            </button>
+            <button
+              *ngIf="playTimeSlider === true"
+              mat-icon-button
+              class="my-auto"
+              onclick="this.blur()"
+              aria-label="icon-button"
+              (click)="togglePlayTimeSlider()"
+              [disabled]="!mapLoaded"
+            >
+              <mat-icon>pause_circle_outline</mat-icon>
+            </button>
+          </div>
+        </div>
+        <div class="flex-grow-1 pl-0">
+          <mat-slider
+            #timeSlider
+            [min]="min"
+            [max]="max"
+            [tickInterval]="1"
+            [(ngModel)]="sliderValue"
+            [disabled]="!mapLoaded"
+            (input)="onInputChange($event)"
+          ></mat-slider>
+        </div>
+      </div>
+    </div>
+    <div class="daterange-container">
+      <div class="pl-3 d-flex flex-column h-100 justify-content-center">
+        <p class="text-muted mb-0">Date Range:</p>
+        <h6 class="pr-2">
+          {{ getTimeRangeText() }}
+        </h6>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- <h1>{{ covidCasesWeekIntervals[timeSliderEl.value] }}</h1> -->
+
+<div *ngIf="_ismobile" class="timeslider-container mat-elevation-z3">
+  <div class="d-flex flex-column">
+    <div class="w-100">
+      <div class="pl-3 d-flex flex-column h-100 justify-content-center">
+        <p class="text-muted mb-0">Date Range:</p>
+        <h5 class="pr-2 mx-auto pt-2">
+          {{ getTimeRangeText() }}
+        </h5>
+      </div>
+    </div>
+    <div class="w-100">
+      <div class="d-flex">
+        <div class="timeslider-control-button pr-0 mt-2">
+          <div class="d-flex h-100 justify-content-center pl-2">
+            <button
+              *ngIf="playTimeSlider === false"
+              mat-icon-button
+              class="my-auto"
+              onclick="this.blur()"
+              aria-label="icon-button"
+              (click)="togglePlayTimeSlider()"
+              [disabled]="!mapLoaded"
+            >
+              <mat-icon>play_circle_outline</mat-icon>
+            </button>
+            <button
+              *ngIf="playTimeSlider === true"
+              mat-icon-button
+              class="my-auto"
+              onclick="this.blur()"
+              aria-label="icon-button"
+              (click)="togglePlayTimeSlider()"
+              [disabled]="!mapLoaded"
+            >
+              <mat-icon>pause_circle_outline</mat-icon>
+            </button>
+          </div>
+        </div>
+        <div class="flex-grow-1 pl-0 pr-2">
+          <mat-slider
+            #timeSlider
+            [min]="min"
+            [max]="max"
+            [tickInterval]="1"
+            [(ngModel)]="sliderValue"
+            [disabled]="!mapLoaded"
+            (input)="onInputChange($event)"
+          ></mat-slider>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

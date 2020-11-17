@@ -4,120 +4,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;400&display=auto");
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=auto");
 
-@import "./core/variables/colors.scss";
-@import "./core/navbar.scss";
-@import "./core/tooltip.scss";
-@import "./core/scrollbar.scss";
+@import "./core/base.scss";
 @import "./core/buttons.scss";
+@import "./core/esriview.scss";
+@import "./core/materialoverrides.scss";
+@import "./core/navbar.scss";
+@import "./core/scrollbar.scss";
+@import "./core/tooltip.scss";
+
+@import "./core/variables/colors.scss";
 
 // Libraries
 // @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 @import "~bootstrap/scss/bootstrap";
-
-body {
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
-  overflow: hidden;
-  font-family: "Lato", sans-serif;
-  background-color: #e6a9ff1f;
-
-  // background: linear-gradient(135deg, var(--bg) 25%, transparent 25%) -540px 0,
-  //   linear-gradient(225deg, var(--bg) 35%, transparent 25%) 10px 0,
-  //   linear-gradient(315deg, var(--bg) 5%, transparent 5%),
-  //   linear-gradient(45deg, var(--bg) 60%, #00000021 25%);
-  // background-size: 150px 150px;
-  // background-color: var(--stripe);
-
-  // background-image: radial-gradient(#000000 1.5px, transparent 1.5px),
-  //   radial-gradient(currentColor 1.5px, transparent 1.5px);
-  // background-size: calc(20 * 2px) calc(20 * 2px);
-  // background-position: 0 0, calc(10 * 2px) calc(10 * 2px);
-}
-
-// body:before {
-//   content: "";
-//   position: absolute;
-//   width: 100%;
-//   z-index: -1;
-//   height: 100%;
-//   /* background: -webkit-linear-gradient(135deg, var(--color-scheme-base), var(--color-scheme-accent) 85%); */
-//   background-image: linear-gradient(to top, #f9fafa, #f9fafa99 100%);
-// }
-
-.background-marked {
-  background-color: red;
-  border-radius: 0.25rem;
-  padding: 16px;
-  // box-shadow: 0 0.0625rem 0.25rem rgba(0, 0, 0, 0.08);
-}
-
-.card-item {
-  background-color: white;
-  border-radius: 0.25rem;
-  padding: 16px;
-}
-
-.animate-width {
-  -webkit-transition: all 400ms ease;
-  -moz-transition: all 400ms ease;
-  -o-transition: all 400ms ease;
-  transition: all 400ms ease;
-}
-
-.background-marked-blue {
-  background-color: blue;
-}
-
-.esri-view-surface,
-.map-focus:focus,
-.esri-view-root:focus {
-  outline: none;
-}
-
-.esri-view-surface {
-  border-radius: 0.25rem;
-}
-
-//
-// @import "core/mixins";
-.esri-view .esri-view-surface--inset-outline {
-  outline: 0;
-}
-.esri-view .esri-view-surface--inset-outline:focus::after {
-  content: "";
-  box-sizing: border-box;
-  position: absolute;
-  z-index: -1 !important;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  outline: 0 !important;
-  outline: 0 !important;
-  outline-offset: 0 !important;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-//make a theme instead...
-::ng-deep {
-  .mat-form-field-appearance-outline .mat-form-field-outline {
-    color: white;
-  }
-  mat-form-field {
-    .mat-hint,
-    input,
-    ::placeholder,
-    .mat-form-field-label {
-      color: white;
-    }
-  }
-}
-
-mat-slide-toggle.wrap-toggle-text {
-  label {
-    span.mat-slide-toggle-content {
-      white-space: normal !important;
-    }
-  }
-}
