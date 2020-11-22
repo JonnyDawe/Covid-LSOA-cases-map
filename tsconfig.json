@@ -10,7 +10,7 @@
     "noImplicitAny": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "module": "esnext",
+    "module": "es2020",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "importHelpers": true,
@@ -19,10 +19,8 @@
       "node_modules/@types"
     ],
     "lib": [
-      "dom",
-      "es2015.promise",
-      "es5",
-      "es6"
+      "es2018",
+      "dom"
     ]
   }
   // [NOTE: these options simply haven't been tested yet with the angular-cli-esri-map components]
