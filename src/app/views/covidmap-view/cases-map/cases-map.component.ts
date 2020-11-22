@@ -6,6 +6,7 @@ import {
   OnDestroy,
   EventEmitter,
   Output,
+  NgZone
 } from "@angular/core";
 
 import esri = __esri;
@@ -18,12 +19,12 @@ import Locate from "@arcgis/core/widgets/Locate";
 import Locator from "@arcgis/core/tasks/Locator";
 import Legend from "@arcgis/core/widgets/Legend";
 import Expand from "@arcgis/core/widgets/Expand";
-import * as watchUtils from "@arcgis/core/core/watchUtils"
+import { whenFalseOnce } from "@arcgis/core/core/watchUtils"
 import LabelClass from "@arcgis/core/layers/support/LabelClass";
 import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol";
 import { ToolTipInfo } from "../../../models/custom-types";
 import { createContinuousRenderer } from "@arcgis/core/smartMapping/renderers/color";
-import colorSchemes from "@arcgis/core/smartMapping/symbology/color";
+import { getSchemeByName } from "@arcgis/core/smartMapping/symbology/color";
 import Color from "@arcgis/core/Color";
 import { Subscription } from "rxjs";
 import { AppStateService } from "../../../shared/app-state.service";
@@ -76,7 +77,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
   private _continuousColorCasesRenderer: esri.renderersClassBreaksRenderer
 
   //Inject appStateService
-  constructor(public appStateService: AppStateService) { }
+  constructor(public appStateService: AppStateService, private zone: NgZone) { }
 
   //Initialise Esri Map
   async initializeMap() {
@@ -102,6 +103,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
 
     //initialise mapView
     this._view = new MapView(mapViewProperties);
+    this._view.popup.autoOpenEnabled = false
     const searchWidget = this.initialiseSearchWidget()
     const locateBtn = new Locate({ view: this._view });
     const legendExpand = new Expand({
@@ -132,7 +134,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     //create caseColorRenderer
     const casesColorRenderer = await this.generateMSOACasesRenderer();
     this._MSOAcasesFeatLayer.renderer = casesColorRenderer
-    watchUtils.whenFalseOnce(this._caseslayerview, "updating", () => {
+    whenFalseOnce(this._caseslayerview, "updating", () => {
       //Hack to work around strange node modules bug... Set the layer to visible once the renderer has been
       //generated.
       this._MSOAcasesFeatLayer.opacity = 0.7
@@ -175,19 +177,24 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       this._view.on("pointer-move", this.debounce(this.hoverHandler, 5));
     }
     //future work...
-    // this._view.on("click", this.clickHandler);
+    this._view.on("click", this.clickHandler);
     return this._view;
   }
 
   ngOnInit(): void {
     this._isMobile = this.appStateService.deviceInfo.isMobile
 
-    // Initialize MapView and return an instance of MapView
-    this.initializeMap().then((mapView) => {
-      // The map has been initialized
-      console.log("mapView ready: ", mapView.ready);
-      this.appStateService.mapLoaded = mapView.ready;
-    });
+
+    this.zone.runOutsideAngular(() => {
+      // Initialize MapView and return an instance of MapView
+      this.initializeMap().then((mapView) => {
+        // The map has been initialized
+        this.zone.run(() => {
+          this.appStateService.mapLoaded = mapView.ready;
+          console.log('mapView ready: ');
+        })
+      });
+    })
 
     //Set up Subscription to panrequests.
     this.panRequestSubscription = this.appStateService.panRequest$.subscribe(
@@ -242,6 +249,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
       outFields: ["*"],
       opacity: 0, //hack 0 opacity for node modules color renderer bug
       title: "Covid_Layer",
+      popupEnabled: false,
     }
 
 
@@ -362,13 +370,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     event: esri.MapViewClickEvent
   ) => {
     let hit = await this.hitTester(event, this._MSOAcasesFeatLayer);
-    if (this._selectedMSOA != hit.graphic) {
-      this._view.graphics.removeAll();
-      this._view.graphics.add(hit.graphic);
-      this._selectedMSOA = hit.graphic;
-      // await this.createRenderer(this._MSOAcasesFeatLayer, this._selectedMSOA.getAttribute("msoa11_hclnm"), 25, "test");
-    }
-    return;
+    this._view.popup.open({ title: "hi there!", location: event.mapPoint, content: "I'm a pop-up" })
   };
 
   hoverHandler: esri.MapViewPointerMoveEventHandler = async (
@@ -435,7 +437,7 @@ export class CasesMapComponent implements OnInit, OnDestroy {
     // configure parameters for the color renderer generator
     // the layer must be specified along with a field name.
 
-    let colorScheme: esri.ColorScheme = await colorSchemes.getSchemeByName({
+    let colorScheme: esri.ColorScheme = await getSchemeByName({
       name: "red 6",
       geometryType: "polygon",
       theme: "high-to-low",
