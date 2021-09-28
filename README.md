@@ -1,27 +1,14 @@
 # CovidMapping
+This is a proof of concept application showing the seven day rolling total for the number of positive cases in local areas across England, as well as stats for the total number of cases recorded per day across England.
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 9.0.2.
+[Demo](https://covidweeklycases.web.app/map)
 
-## Development server
+`**NOTE** The application was written during the initial wave of the COVID-19 pandemic as a POC, and LSOA data has not been updated since November 13th 2020.`
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Key Features:
+- Demonstration of integrating Angular and the new JavaScript API for ArcGIS ECMA Modules.
+- A custom reusable directive was written to generate tooltips.
+- Experimented with detecting user device type (desktop vs mobile) in order to tailor the map display and user interface to each. On a small device it is essential that the map takes up the entire screen and does not scroll. 
+- Integrated with the Public Health England Covid API and display data using the ChartJs charting framework.
 
-## Code scaffolding
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
-
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
